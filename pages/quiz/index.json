@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "tile-hand": "../../components/tile-hand/index",
+    "quiz-option": "../../components/quiz-option/index"
+  },
+  "navigationBarTitleText": "练习"
+}

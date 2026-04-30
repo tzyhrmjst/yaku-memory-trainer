@@ -1,0 +1,49 @@
+@import '../../variable.less';
+
+.yaku-card {
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.yaku-card-header {
+  margin-bottom: 12rpx;
+}
+
+.yaku-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: @text-primary;
+  margin-right: 16rpx;
+}
+
+.yaku-name-ja {
+  font-size: @font-size-xs;
+  color: @text-hint;
+}
+
+.yaku-card-body {
+  margin-bottom: 16rpx;
+}
+
+.yaku-desc {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.yaku-card-footer {
+  gap: 12rpx;
+}

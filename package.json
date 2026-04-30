@@ -1,6 +1,6 @@
 {
-  "name": "tdesign-miniprogram-starter",
-  "version": "0.0.2",
+  "name": "yaku-memory-trainer",
+  "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,11 +12,13 @@
   "keywords": [
     "wechat",
     "miniprogram",
-    "starter"
+    "mahjong",
+    "yaku",
+    "trainer"
   ],
-  "author": "leejim",
+  "author": "",
   "license": "MIT",
-  "description": "a start-kit for wechat miniprogram powerby TDesign miniprogram",
+  "description": "日麻役种记忆训练小程序 — 役种图鉴 + 选择题练习 + 错题本 + 本地复习",
   "dependencies": {
     "tdesign-miniprogram": "^1.11.2"
   },
@@ -31,10 +33,10 @@
     "prettier": "^3.0.2"
   },
   "lint-staged": {
-    "{src,example,script}/**/*.{js,ts,wxml,html,json,less}": [
+    "{pages,components,utils,data}/**/*.{js,wxml,json,less}": [
       "prettier --write"
     ],
-    "**/*.{js,ts}": [
+    "**/*.js": [
       "eslint --fix"
     ]
   }

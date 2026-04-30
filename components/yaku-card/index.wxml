@@ -1,0 +1,13 @@
+<view class="yaku-card" bindtap="onTap">
+  <view class="yaku-card-header flex-row">
+    <view class="yaku-name">{{name}}</view>
+    <view class="yaku-name-ja">{{nameJa}}</view>
+  </view>
+  <view class="yaku-card-body">
+    <view class="yaku-desc">{{description}}</view>
+  </view>
+  <view class="yaku-card-footer flex-row">
+    <t-tag theme="primary" variant="light" size="small">{{hanDisplay}}</t-tag>
+    <t-tag theme="{{categoryTheme}}" variant="outline" size="small">{{categoryName}}</t-tag>
+  </view>
+</view>

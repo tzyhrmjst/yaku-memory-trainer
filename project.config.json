@@ -45,57 +45,35 @@
       "less"
     ],
     "condition": false,
-    "ignoreUploadUnusedFiles": true
+    "ignoreUploadUnusedFiles": true,
+    "compileWorklet": false,
+    "localPlugins": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.7.8",
-  "appid": "wx0ee80a2f23dbd157",
-  "projectname": "miniprogram-starter",
+  "appid": "wxafecd7f7d93755fe",
+  "projectname": "yaku-memory-trainer",
   "condition": {
     "miniprogram": {
       "list": [
         {
-          "name": "login",
-          "pathName": "pages/login/login",
+          "name": "首页",
+          "pathName": "pages/index/index",
           "query": "",
           "scene": null
         },
         {
-          "name": "loginCode",
-          "pathName": "pages/loginCode/loginCode",
+          "name": "图鉴",
+          "pathName": "pages/catalog/index",
           "query": "",
           "scene": null
         },
         {
-          "name": "my",
-          "pathName": "pages/my/index",
+          "name": "练习",
+          "pathName": "pages/quiz/index",
           "query": "",
-          "scene": null
-        },
-        {
-          "name": "info-edit",
-          "pathName": "pages/my/info-edit/index",
-          "query": "",
-          "scene": null
-        },
-        {
-          "name": "dataCenter",
-          "pathName": "pages/dataCenter/index",
-          "query": "",
-          "scene": null
-        },
-        {
-          "name": "release",
-          "pathName": "pages/release/index",
-          "query": "",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "setting",
-          "pathName": "pages/setting/index",
-          "query": "",
-          "launchMode": "default",
           "scene": null
         }
       ]
@@ -104,5 +82,6 @@
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
-  }
+  },
+  "simulatorPluginLibVersion": {}
 }

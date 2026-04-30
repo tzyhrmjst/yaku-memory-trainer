@@ -1,0 +1,61 @@
+@import '../../variable.less';
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+}
+
+.wrong-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.wrong-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: @bg-white;
+  border-radius: @radius-default;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.wrong-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.wrong-question {
+  font-size: @font-size-default;
+  color: @text-primary;
+  font-weight: 500;
+}
+
+.wrong-yaku {
+  display: flex;
+}
+
+.wrong-item-right {
+  text-align: right;
+}
+
+.wrong-review-count {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+}
+
+.wrong-accuracy {
+  font-size: @font-size-xs;
+  color: @text-hint;
+  margin-top: 4rpx;
+}
+
+.wrong-date {
+  font-size: @font-size-xs;
+  color: @text-hint;
+  margin-top: 4rpx;
+}

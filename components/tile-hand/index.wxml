@@ -1,0 +1,40 @@
+<view class="tile-hand">
+  <!-- 图片模式 -->
+  <block wx:if="{{useImages}}">
+    <image
+      wx:for="{{displayTiles}}"
+      wx:key="index"
+      src="{{item.src}}"
+      class="tile-img"
+      mode="aspectFit"
+    />
+
+    <!-- 和了牌 -->
+    <view wx:if="{{winTileDisplay}}" class="tile-win-separator">
+      <text class="win-label">和了</text>
+      <image
+        src="{{winTileDisplay.src}}"
+        class="tile-img tile-win-img"
+        mode="aspectFit"
+      />
+    </view>
+  </block>
+
+  <!-- 文字模式（不启用图片时） -->
+  <block wx:else>
+    <view
+      wx:for="{{displayTiles}}"
+      wx:key="index"
+      class="tile tile-{{item.type}}"
+    >
+      <text class="tile-text">{{item.text}}</text>
+    </view>
+
+    <view wx:if="{{winTileDisplay}}" class="tile-win-separator">
+      <text class="win-label">和了</text>
+      <view class="tile tile-win">
+        <text class="tile-text">{{winTileDisplay.text}}</text>
+      </view>
+    </view>
+  </block>
+</view>

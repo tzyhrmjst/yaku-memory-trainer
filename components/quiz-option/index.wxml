@@ -1,0 +1,11 @@
+<view
+  class="quiz-option {{stateClass}}"
+  bindtap="onTap"
+>
+  <view class="option-prefix">{{prefix}}</view>
+  <view class="option-text">{{text}}</view>
+  <view wx:if="{{showIcon}}" class="option-icon">
+    <text wx:if="{{state === 'correct'}}">✓</text>
+    <text wx:elif="{{state === 'wrong'}}">✗</text>
+  </view>
+</view>

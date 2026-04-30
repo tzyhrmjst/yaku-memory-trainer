@@ -1,0 +1,6 @@
+<view class="empty-state">
+  <view class="empty-icon">{{emoji}}</view>
+  <view class="empty-text">{{text}}</view>
+  <view wx:if="{{subText}}" class="empty-subtext">{{subText}}</view>
+  <slot name="action" />
+</view>

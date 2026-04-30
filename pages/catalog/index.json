@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "yaku-card": "../../components/yaku-card/index",
+    "t-tag": "tdesign-miniprogram/tag/tag"
+  },
+  "navigationBarTitleText": "役种图鉴"
+}

@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-button": "tdesign-miniprogram/button/button",
+    "tile-hand": "../../components/tile-hand/index"
+  },
+  "navigationBarTitleText": "役种详情"
+}

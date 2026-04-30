@@ -1,0 +1,70 @@
+<view class="page">
+  <!-- 加载状态 -->
+  <block wx:if="{{loading}}">
+    <view class="loading-container">
+      <t-loading theme="circular" size="48rpx" text="加载中..." />
+    </view>
+  </block>
+
+  <block wx:else>
+    <!-- 统计概览 -->
+    <view class="stats-section">
+      <image class="stats-bg-image" src="/assets/images/mahjong-header.jpg" mode="aspectFill" />
+      <view class="stats-header">
+        <text class="greeting">日麻役种记忆训练</text>
+      </view>
+      <view class="stats-grid">
+        <stat-card
+          value="{{stats.todayAnswered}}"
+          label="今日答题"
+          bgColor="rgba(232, 245, 233, 0.9)"
+          valueColor="#2e7d32"
+        />
+        <stat-card value="{{stats.accuracy}}%" label="正确率" bgColor="rgba(227, 242, 253, 0.9)" valueColor="#1565c0" />
+        <stat-card value="{{stats.streak}}" label="连续天数" bgColor="rgba(255, 243, 224, 0.9)" valueColor="#e65100" />
+        <stat-card
+          value="{{stats.totalAnswered}}"
+          label="累计答题"
+          bgColor="rgba(243, 229, 245, 0.9)"
+          valueColor="#7b1fa2"
+        />
+        <stat-card value="{{wrongCount}}" label="错题本" bgColor="rgba(255, 235, 238, 0.9)" valueColor="#c62828" />
+        <stat-card
+          value="{{stats.studyDays}}"
+          label="学习天数"
+          bgColor="rgba(224, 242, 241, 0.9)"
+          valueColor="#00695c"
+        />
+      </view>
+    </view>
+
+    <!-- 入口按钮 -->
+    <view class="entry-section">
+      <view class="entry-grid">
+        <view class="entry-card" bindtap="goCatalog">
+          <view class="entry-icon">📖</view>
+          <view class="entry-name">役种图鉴</view>
+          <view class="entry-desc">查看全部役种</view>
+        </view>
+
+        <view class="entry-card" bindtap="goQuiz">
+          <view class="entry-icon">✏️</view>
+          <view class="entry-name">开始练习</view>
+          <view class="entry-desc">看牌猜役</view>
+        </view>
+
+        <view class="entry-card" bindtap="goWrongBook">
+          <view class="entry-icon">📝</view>
+          <view class="entry-name">错题本</view>
+          <view class="entry-desc">{{wrongCount}} 道待复习</view>
+        </view>
+
+        <view class="entry-card" bindtap="goProfile">
+          <view class="entry-icon">📊</view>
+          <view class="entry-name">我的进度</view>
+          <view class="entry-desc">学习统计</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

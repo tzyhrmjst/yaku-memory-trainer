@@ -1,0 +1,141 @@
+@import '../../variable.less';
+
+// 统计卡片
+.stats-card {
+  margin-top: 24rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12rpx;
+}
+
+// 趋势图
+.trend-card {
+  margin-top: 32rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.trend-chart {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 220rpx;
+  padding-top: 20rpx;
+}
+
+.trend-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.trend-bar-label {
+  font-size: 20rpx;
+  color: @text-hint;
+}
+
+.trend-bar {
+  width: 40rpx;
+  background: linear-gradient(180deg, @brand-color, #87d068);
+  border-radius: 6rpx 6rpx 0 0;
+  min-height: 4rpx;
+  transition: height 0.3s;
+}
+
+.trend-bar-date {
+  font-size: 20rpx;
+  color: @text-hint;
+  margin-top: 4rpx;
+}
+
+// 役种掌握度
+.mastery-card {
+  margin-top: 32rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  margin-bottom: 40rpx;
+}
+
+.mastery-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.mastery-left {
+  flex: 1;
+  min-width: 0;
+  margin-right: 24rpx;
+}
+
+.mastery-name {
+  font-size: @font-size-default;
+  font-weight: 600;
+  color: @text-primary;
+}
+
+.mastery-stats {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 6rpx;
+}
+
+.mastery-answered {
+  font-size: @font-size-xs;
+  color: @text-hint;
+}
+
+.mastery-accuracy {
+  font-size: @font-size-xs;
+  color: @text-secondary;
+  font-weight: 600;
+}
+
+.text-correct {
+  color: @correct-color;
+}
+
+.mastery-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.mastery-bar-bg {
+  width: 120rpx;
+  height: 8rpx;
+  background: #e0e0e0;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.mastery-bar-fill {
+  height: 100%;
+  border-radius: 4rpx;
+  transition: width 0.5s ease;
+}
+
+.fill-mastered { background: @correct-color; }
+.fill-learning { background: @advanced-color; }
+.fill-new { background: #bdbdbd; }

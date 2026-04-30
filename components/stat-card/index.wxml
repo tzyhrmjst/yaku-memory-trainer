@@ -1,0 +1,5 @@
+<view class="stat-card" style="background: {{bgColor}}">
+  <view class="stat-value" style="color: {{valueColor}}">{{value}}</view>
+  <view class="stat-label">{{label}}</view>
+  <view wx:if="{{subLabel}}" class="stat-sublabel">{{subLabel}}</view>
+</view>

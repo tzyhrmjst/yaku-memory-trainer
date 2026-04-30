@@ -1,0 +1,53 @@
+<view class="page" wx:if="{{yaku}}">
+  <view class="page-container">
+    <!-- 标题区 -->
+    <view class="detail-header">
+      <view class="detail-title-row">
+        <text class="detail-name">{{yaku.name}}</text>
+        <text class="detail-name-ja">{{yaku.nameJa}}</text>
+      </view>
+      <view class="detail-tags">
+        <t-tag theme="{{yaku.categoryTheme}}" variant="light" size="medium">{{yaku.hanDisplay}}</t-tag>
+        <t-tag theme="{{yaku.categoryTheme}}" variant="outline" size="medium">{{yaku.categoryName}}</t-tag>
+        <t-tag wx:if="{{masteryInfo.accuracy > 0}}" theme="default" variant="light" size="medium">
+          正确率 {{masteryInfo.accuracy}}%
+        </t-tag>
+      </view>
+    </view>
+
+    <!-- 描述 -->
+    <view class="detail-section">
+      <view class="section-title">说明</view>
+      <view class="detail-desc">{{yaku.description}}</view>
+      <view wx:if="{{yaku.note}}" class="detail-note">
+        <text class="note-label">注意：</text>{{yaku.note}}
+      </view>
+    </view>
+
+    <!-- 成立条件 -->
+    <view class="detail-section">
+      <view class="section-title">成立条件</view>
+      <view
+        wx:for="{{yaku.conditions}}"
+        wx:key="index"
+        class="condition-item"
+      >
+        <text class="condition-dot">•</text>
+        <text>{{item}}</text>
+      </view>
+    </view>
+
+    <!-- 牌例 -->
+    <view class="detail-section">
+      <view class="section-title">牌例</view>
+      <tile-hand tiles="{{yaku.exampleTiles}}" winTile="{{yaku.winTile}}" />
+    </view>
+
+    <!-- 练习按钮 -->
+    <view class="detail-footer">
+      <t-button theme="primary" size="large" block bindtap="goQuiz">
+        练练这个役种
+      </t-button>
+    </view>
+  </view>
+</view>

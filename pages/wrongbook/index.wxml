@@ -1,0 +1,48 @@
+<view class="page">
+  <view class="page-container">
+    <!-- 空状态 -->
+    <block wx:if="{{empty}}">
+      <empty-state text="错题本为空" subText="继续练习，错题会自动收集到这里" emoji="📝">
+        <view slot="action" class="mt-24">
+          <t-button theme="primary" size="medium" bindtap="goReview">去练习</t-button>
+        </view>
+      </empty-state>
+    </block>
+
+    <!-- 错题列表 -->
+    <block wx:else>
+      <view class="header-section">
+        <view class="section-title">共 {{list.length}} 道错题待复习</view>
+        <t-button theme="primary" size="medium" bindtap="goReview">开始复习</t-button>
+      </view>
+
+      <view class="wrong-list">
+        <view
+          wx:for="{{list}}"
+          wx:key="questionId"
+          class="wrong-item"
+        >
+          <view class="wrong-item-left">
+            <view class="wrong-question">题目 #{{item.questionId}}</view>
+            <view class="wrong-yaku">
+              <t-tag
+                theme="{{item.yakuCategory === 'basic' ? 'success' : item.yakuCategory === 'advanced' ? 'warning' : 'danger'}}"
+                variant="light"
+                size="small"
+              >
+                {{item.yakuName}}
+              </t-tag>
+            </view>
+          </view>
+          <view class="wrong-item-right">
+            <view class="wrong-review-count">已复习 {{item.reviewCount}} 次</view>
+            <view wx:if="{{item.reviewCount > 0}}" class="wrong-accuracy">
+              正确率 {{item.accuracy}}%
+            </view>
+            <view class="wrong-date">添加于 {{item.addedDate}}</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

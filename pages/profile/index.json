@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "stat-card": "../../components/stat-card/index"
+  },
+  "navigationBarTitleText": "我的进度"
+}

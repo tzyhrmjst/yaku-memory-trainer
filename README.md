@@ -1,70 +1,126 @@
-# TDesign 通用页面模板
+# 日麻役种记忆训练
 
-基于 TDesign 打造的通用页面模板，包含通用的登陆注册、个人中心、设置中心、信息流等等功能。
+一款纯前端微信小程序，帮助日本麻将（リーチ麻雀）新手记忆役种。支持役种图鉴、选择题练习、错题本和本地复习。
 
-## 模版功能预览
+## 功能
 
-### 首页
+- **役种图鉴** — 浏览役种的名称、番数、成立条件、牌例
+- **选择题练习** — 两种题型（看牌猜役 / 看定义选条件），答对答错即时反馈
+- **错题本** — 自动收集错题，记录复习次数
+- **今日复习** — 基于错题本生成复习题单
+- **学习统计** — 累计答题、正确率、连续天数、各役种掌握度
 
-<div style="display: flex">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/home-1.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/home-2.png">
-</div>
+## 技术栈
 
-### 信息发布
+- 微信小程序原生 + LESS
+- TDesign Miniprogram v1.11
+- 纯前端，无后端，无数据库，数据存 `wx.Storage`
 
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/publish-1.png">
-
-### 搜索页
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/search-1.png">
-
-### 个人中心
-<div style="display: flex">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-1.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-2.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-3.png">
-</div>
-
-
-### 设置中心
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/setting-1.png">
-
-### 消息中心
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/message-1.png">
-
-
-## 开发预览
-### 目录结构（TODO: 生成目录结构树）
-
-
-### 在开发者工具中预览
+## 运行方式
 
 ```bash
-# 安装项目依赖
+# 1. 安装依赖
 npm install
 
+# 2. 微信开发者工具 → 工具 → 构建 npm
+
+# 3. 点击编译运行
 ```
 
-打开[微信开发者工具](https://mp.weixin.qq.com/debug/wxadoc/dev/devtools/download.html)，导入整个项目，构建 npm 包，就可以预览示例了。
+## 目录结构
 
-### 基础库版本
+```
+yaku/
+├── data/                # 数据层
+│   ├── yakus.js         # 役种数据
+│   ├── questions.js     # 题库
+│   └── levels.js        # 配置
+├── utils/               # 工具层
+│   ├── storage.js       # 本地存储封装
+│   ├── questionEngine.js # 出题引擎
+│   ├── reviewEngine.js  # 复习引擎
+│   ├── statsEngine.js   # 统计引擎
+│   └── format.js        # 格式化工具
+├── components/          # 组件
+│   ├── yaku-card/       # 役种卡片
+│   ├── tile-hand/       # 牌面展示
+│   ├── quiz-option/     # 选项按钮
+│   ├── stat-card/       # 统计卡片
+│   └── empty-state/     # 空状态
+└── pages/               # 页面
+    ├── index/           # 首页
+    ├── catalog/         # 役种图鉴
+    ├── yaku-detail/     # 役种详情
+    ├── quiz/            # 练习
+    ├── review/          # 复习
+    ├── wrongbook/       # 错题本
+    └── profile/         # 我的进度
+```
 
-最低基础库版本`^2.6.5`
+## 如何扩充题库
 
+### 添加新役种
 
-## 贡献成员
+编辑 `data/yakus.js`，按以下格式添加：
 
-<a href="https://github.com/TDesignOteam/tdesign-miniprogram-starter/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=TDesignOteam/tdesign-miniprogram-starter" />
-</a>
+```js
+{
+  id: 'chitoi',           // 唯一标识
+  name: '七对子',
+  nameJa: 'チートイツ',
+  han: 2,
+  category: 'advanced',   // basic | advanced | yakuman
+  description: '由7对不同牌组成的和牌。',
+  conditions: [
+    '手牌由7对不同的牌组成',
+    '不能有4张相同的牌（即不能有槓子）'
+  ],
+  note: '七对子必然是门前清。',
+  exampleTiles: ['1m', '1m', '3p', '3p', '5s', '5s', '7m', '7m', '东', '东', '白', '白', '9p', '9p'],
+  winTile: '9p'
+}
+```
 
-## 反馈
+### 添加新题目
 
-有任何问题，建议通过 [Github issues](https://github.com/TDesignOteam/tdesign-miniprogram-starter/issues) 反馈。
+编辑 `data/questions.js`，按以下格式添加：
 
-## 开源协议
+```js
+// 看牌猜役
+{
+  id: 'q021',             // 唯一ID
+  type: 'tiles-to-yaku',
+  yakuId: 'chitoi',       // 对应役种ID
+  tiles: ['1m', '1m', '3p', '3p', ...],
+  options: ['七对子', '平和', '断幺九', '役牌'],
+  answer: 0,              // 正确答案索引
+  explanation: '手牌由7对不同牌组成，符合七对子条件。'
+}
 
-TDesign 遵循 [MIT 协议](https://github.com/TDesignOteam/tdesign-miniprogram-starter/blob/main/LICENSE)。
+// 看定义选条件
+{
+  id: 'q022',
+  type: 'def-to-condition',
+  yakuId: 'chitoi',
+  question: '七对子的核心条件是什么？',
+  options: ['A', 'B', 'C', 'D'],
+  answer: 2,
+  explanation: '解释...'
+}
+```
+
+### 图片模式（可选）
+
+`tile-hand` 组件默认使用 CSS 文字绘制牌面。如需切换为图片：
+
+```xml
+<tile-hand
+  tiles="{{tiles}}"
+  useImages="{{true}}"
+  tileImages="{{['/assets/2m.png', ...]}}"
+/>
+```
+
+## License
+
+MIT

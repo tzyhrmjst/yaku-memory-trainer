@@ -1,0 +1,64 @@
+@import '../../variable.less';
+
+.tile-hand {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 6rpx;
+  padding: 16rpx 0;
+}
+
+// ===== 图片模式 =====
+.tile-img {
+  width: 56rpx;
+  height: 90rpx;
+  display: block;
+  border-radius: 4rpx;
+  box-shadow: 1rpx 1rpx 2rpx rgba(0, 0, 0, 0.15);
+}
+
+.tile-win-separator {
+  display: flex;
+  align-items: flex-end;
+  gap: 8rpx;
+  margin-left: 12rpx;
+}
+
+.win-label {
+  font-size: @font-size-xs;
+  color: @text-hint;
+  white-space: nowrap;
+  padding-bottom: 8rpx;
+}
+
+.tile-win-img {
+  border: 3rpx solid @brand-color;
+  border-radius: 6rpx;
+  box-sizing: content-box;
+}
+
+// ===== 文字模式（备用） =====
+.tile {
+  width: 56rpx;
+  height: 74rpx;
+  background: @bg-white;
+  border: 2rpx solid #ddd;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1rpx 1rpx 2rpx rgba(0, 0, 0, 0.1);
+  font-size: 26rpx;
+  position: relative;
+}
+
+.tile-man .tile-text { color: @tile-man-color; }
+.tile-pin .tile-text { color: @tile-pin-color; }
+.tile-sou .tile-text { color: @tile-sou-color; }
+.tile-ji .tile-text { color: @tile-ji-color; }
+
+.tile-win {
+  border-color: @brand-color;
+  background: @brand-light;
+}

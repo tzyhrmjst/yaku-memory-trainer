@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="page-container">
+    <!-- 筛选栏 -->
+    <view class="filter-bar">
+      <t-tag
+        wx:for="{{['all', 'basic', 'advanced', 'yakuman']}}"
+        wx:key="*this"
+        data-filter="{{item}}"
+        theme="{{filter === item ? 'primary' : 'default'}}"
+        variant="{{filter === item ? 'dark' : 'outline'}}"
+        size="medium"
+        bindtap="onFilterTap"
+      >
+        {{item === 'all' ? '全部' : item === 'basic' ? '基础' : item === 'advanced' ? '进阶' : '役满'}}
+      </t-tag>
+    </view>
+
+    <!-- 役种列表 -->
+    <view class="yaku-list">
+      <yaku-card
+        wx:for="{{yakus}}"
+        wx:key="id"
+        wx:if="{{filter === 'all' || item.category === filter}}"
+        yakuId="{{item.id}}"
+        name="{{item.name}}"
+        nameJa="{{item.nameJa}}"
+        han="{{item.han}}"
+        category="{{item.category}}"
+        description="{{item.description}}"
+        bind:tap="onYakuTap"
+      />
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="footer-btn">
+      <t-button theme="primary" size="large" block bindtap="onRandomQuiz">
+        随机练习
+      </t-button>
+    </view>
+  </view>
+</view>

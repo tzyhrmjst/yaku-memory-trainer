@@ -1,0 +1,98 @@
+<view class="page">
+  <!-- 加载 -->
+  <block wx:if="{{loading}}">
+    <view class="loading-container">
+      <t-loading theme="circular" size="48rpx" text="出题中..." />
+    </view>
+  </block>
+
+  <!-- 答题 -->
+  <block wx:elif="{{!completed}}">
+    <view class="page-container">
+      <!-- 进度 -->
+      <view class="quiz-progress-bar">
+        <view class="progress-track">
+          <view class="progress-fill" style="width: {{progress}}%"></view>
+        </view>
+        <text class="progress-text">{{currentIndex + 1}} / {{totalQuestions}}</text>
+      </view>
+
+      <!-- 题目 -->
+      <view class="question-card" wx:if="{{currentQuestion}}">
+        <!-- 题目题干 -->
+        <view class="question-header">
+          <t-tag theme="{{currentQuestion.type === 'tiles-to-yaku' ? 'primary' : 'warning'}}" variant="outline" size="small">
+            {{currentQuestion.type === 'tiles-to-yaku' ? '看牌猜役' : '看定义选条件'}}
+          </t-tag>
+        </view>
+
+        <!-- 牌面展示（猜役题型） -->
+        <view wx:if="{{currentQuestion.type === 'tiles-to-yaku' && currentQuestion.tiles}}" class="tile-section">
+          <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
+          <view wx:if="{{currentQuestion.context}}" class="tile-context">
+            ⚠️ {{currentQuestion.context}}
+          </view>
+        </view>
+
+        <!-- 问题文本 -->
+        <view class="question-text">
+          {{currentQuestion.question || '这是哪个役种？'}}
+        </view>
+
+        <!-- 选项 -->
+        <view class="options-list">
+          <quiz-option
+            wx:for="{{currentQuestion.options}}"
+            wx:key="index"
+            index="{{index}}"
+            text="{{item.text || item}}"
+            state="{{item.state || 'normal'}}"
+            bind:select="onOptionSelect"
+          />
+        </view>
+
+        <!-- 解析 -->
+        <view wx:if="{{answered}}" class="explanation {{isCorrect ? 'explain-correct' : 'explain-wrong'}}">
+          <view class="explain-status">
+            {{isCorrect ? '✓ 回答正确' : '✗ 回答错误'}}
+          </view>
+          <view class="explain-text">{{explanation}}</view>
+        </view>
+
+        <!-- 下一题按钮 -->
+        <view wx:if="{{answered}}" class="next-btn">
+          <t-button theme="primary" size="large" block bindtap="onNext">
+            {{currentIndex + 1 >= totalQuestions ? '查看结果' : '下一题'}}
+          </t-button>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 完成结算 -->
+  <block wx:else>
+    <view class="page-container">
+      <view class="result-card">
+        <view class="result-icon">{{score >= 80 ? '🎉' : score >= 50 ? '💪' : '📚'}}</view>
+        <view class="result-score">{{score}}分</view>
+        <view class="result-summary">
+          答对 {{correctCount}} / {{totalQuestions}} 题
+        </view>
+        <view class="result-detail">
+          正确率 {{score}}%
+        </view>
+
+        <view class="result-actions mt-32">
+          <t-button theme="primary" size="large" block bindtap="onRetry">
+            再练一次
+          </t-button>
+          <view class="mt-16">
+            <t-button theme="default" size="large" block bindtap="onGoHome">
+              返回首页
+            </t-button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="page-container">
+    <!-- 总览统计 -->
+    <view class="stats-card">
+      <view class="section-title">学习概览</view>
+      <view class="stats-grid">
+        <stat-card value="{{stats.totalAnswered}}" label="累计答题" bgColor="#e8f5e9" valueColor="#2e7d32" />
+        <stat-card value="{{stats.accuracy}}%" label="总正确率" bgColor="#e3f2fd" valueColor="#1565c0" />
+        <stat-card value="{{stats.studyDays}}" label="学习天数" bgColor="#fff3e0" valueColor="#e65100" />
+        <stat-card value="{{stats.streak}}" label="连续天数" bgColor="#f3e5f5" valueColor="#7b1fa2" />
+      </view>
+    </view>
+
+    <!-- 近7天趋势 -->
+    <view class="trend-card">
+      <view class="section-title">近7天学习</view>
+      <view wx:if="{{weeklyTrend.length > 0}}" class="trend-chart">
+        <view wx:for="{{weeklyTrend}}" wx:key="date" class="trend-bar-col">
+          <view class="trend-bar-label">{{item.answered}}</view>
+          <view
+            class="trend-bar"
+            style="height: {{item.barHeight > 0 ? item.barHeight : 4}}rpx; {{item.barHeight > 0 ? '' : 'opacity: 0.3'}}"
+          ></view>
+          <view class="trend-bar-date">{{item.dayLabel}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 役种掌握度 -->
+    <view class="mastery-card">
+      <view class="section-title">役种掌握度</view>
+      <view
+        wx:for="{{mastery}}"
+        wx:key="yakuId"
+        class="mastery-item"
+        data-id="{{item.yakuId}}"
+        bindtap="onYakuTap"
+      >
+        <view class="mastery-left">
+          <view class="mastery-name">{{item.name}}</view>
+          <view class="mastery-stats">
+            <text class="mastery-answered">{{item.totalAnswered}}题</text>
+            <text class="mastery-accuracy {{item.masteryLevel === 'mastered' ? 'text-correct' : ''}}">{{item.accuracy}}%</text>
+          </view>
+        </view>
+        <view class="mastery-right">
+          <view class="mastery-bar-bg">
+            <view
+              class="mastery-bar-fill {{item.masteryLevel === 'mastered' ? 'fill-mastered' : item.masteryLevel === 'learning' ? 'fill-learning' : 'fill-new'}}"
+              style="width: {{item.accuracy}}%"
+            ></view>
+          </view>
+          <t-tag
+            theme="{{item.masteryLevel === 'mastered' ? 'success' : item.masteryLevel === 'learning' ? 'warning' : 'default'}}"
+            variant="light"
+            size="small"
+          >
+            {{item.masteryLevel === 'mastered' ? '已掌握' : item.masteryLevel === 'learning' ? '学习中' : '未开始'}}
+          </t-tag>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

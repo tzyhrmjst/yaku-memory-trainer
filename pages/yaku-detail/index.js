@@ -1,0 +1,54 @@
+const yakus = require('../../data/yakus');
+const statsEngine = require('../../utils/statsEngine');
+
+const categoryMap = {
+  basic: { name: '基础', theme: 'success' },
+  advanced: { name: '进阶', theme: 'warning' },
+  yakuman: { name: '役满', theme: 'danger' }
+};
+
+function formatHanDisplay(han) {
+  if (han === 26) return '双倍役满';
+  if (han === 13) return '役满';
+  if (han === 5) return '满贯';
+  return han + '翻';
+}
+
+Page({
+  data: {
+    yaku: null,
+    masteryInfo: null
+  },
+
+  onLoad(options) {
+    const { id } = options;
+    if (!id) {
+      wx.navigateBack();
+      return;
+    }
+
+    const yaku = yakus.find(y => y.id === id);
+    if (!yaku) {
+      wx.navigateBack();
+      return;
+    }
+
+    const categoryInfo = categoryMap[yaku.category] || categoryMap.basic;
+    const mastery = statsEngine.getYakuMastery();
+    const masteryInfo = mastery.find(m => m.yakuId === id);
+
+    this.setData({
+      yaku: {
+        ...yaku,
+        categoryName: categoryInfo.name,
+        categoryTheme: categoryInfo.theme,
+        hanDisplay: formatHanDisplay(yaku.han)
+      },
+      masteryInfo: masteryInfo || { accuracy: 0, totalAnswered: 0, masteryLevel: 'new' }
+    });
+  },
+
+  goQuiz() {
+    wx.navigateTo({ url: '/pages/quiz/index?yakuId=' + this.data.yaku.id });
+  }
+});
