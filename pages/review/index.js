@@ -18,6 +18,7 @@ Page({
     selectedIndex: -1,
     isCorrect: false,
     explanation: '',
+    optionStates: [],
 
     // 结算
     correctCount: 0
@@ -54,6 +55,11 @@ Page({
     const question = this.data.quizSet[index];
     if (!question) return;
 
+    const optionStates = (question.options || []).map(text => ({
+      text,
+      state: 'normal'
+    }));
+
     this.setData({
       currentIndex: index,
       currentQuestion: question,
@@ -61,7 +67,8 @@ Page({
       answered: false,
       selectedIndex: -1,
       isCorrect: false,
-      explanation: ''
+      explanation: '',
+      optionStates
     });
   },
 
@@ -72,14 +79,13 @@ Page({
     const question = this.data.currentQuestion;
     const isCorrect = selectedIndex === question.answer;
 
-    // 更新选项状态
-    question.options = question.options.map((opt, i) => {
-      if (i === question.answer) return { text: opt, state: 'correct' };
-      if (i === selectedIndex && !isCorrect) return { text: opt, state: 'wrong' };
-      return { text: opt, state: 'disabled' };
+    // 生成选项展示状态，不污染原始题目数据
+    const optionStates = this.data.optionStates.map((opt, i) => {
+      if (i === question.answer) return { ...opt, state: 'correct' };
+      if (i === selectedIndex) return { ...opt, state: 'wrong' };
+      return { ...opt, state: 'disabled' };
     });
 
-    // 记录
     storage.addRecord({
       questionId: question.id,
       yakuId: question.yakuId,
@@ -87,10 +93,8 @@ Page({
       isCorrect
     });
 
-    // 更新错题本（答对可能移除）
     storage.updateWrongReview(question.id, isCorrect);
 
-    // 更新每日进度
     storage.updateDailyProgress(isCorrect, true);
 
     this.setData({
@@ -98,7 +102,7 @@ Page({
       selectedIndex,
       isCorrect,
       explanation: question.explanation,
-      currentQuestion: question,
+      optionStates,
       correctCount: this.data.correctCount + (isCorrect ? 1 : 0)
     });
   },

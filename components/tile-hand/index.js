@@ -7,8 +7,21 @@ Component({
     useImages: { type: Boolean, value: true }
   },
 
+  lifetimes: {
+    attached() {
+      this._renderTiles();
+    }
+  },
+
   observers: {
-    'tiles, winTile'(tiles, winTile) {
+    'tiles, winTile'() {
+      this._renderTiles();
+    }
+  },
+
+  methods: {
+    _renderTiles() {
+      const { tiles, winTile } = this.properties;
       if (!tiles || tiles.length === 0) return;
 
       const displayTiles = tiles.map(tile => ({
@@ -20,7 +33,6 @@ Component({
 
       let winTileDisplay = null;
       if (winTile) {
-        // 和了牌可能有说明文字（如 "5m（自摸）"），只取牌代码部分
         const winCode = winTile.split('（')[0].split('或')[0].trim();
         winTileDisplay = {
           text: getTileDisplay(winCode),
@@ -31,6 +43,11 @@ Component({
       }
 
       this.setData({ displayTiles, winTileDisplay });
+    },
+
+    onImgError(e) {
+      const idx = e.currentTarget.dataset.index;
+      wx.showToast({ title: '图片加载失败: ' + idx, icon: 'none' });
     }
   }
 });

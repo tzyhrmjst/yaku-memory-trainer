@@ -53,8 +53,8 @@
   },
   "compileType": "miniprogram",
   "libVersion": "3.7.8",
-  "appid": "wxafecd7f7d93755fe",
-  "projectname": "yaku-memory-trainer",
+  "appid": "wxc1de398a5961a5c1",
+  "projectname": "riichi-yaku-memory-helper",
   "condition": {
     "miniprogram": {
       "list": [

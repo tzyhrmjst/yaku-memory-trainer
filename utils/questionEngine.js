@@ -2,6 +2,7 @@
 const manualQuestions = require('../data/questions');
 const yakus = require('../data/yakus');
 const levels = require('../data/levels');
+const storage = require('./storage');
 const { generateAllQuestions } = require('./questionGenerator');
 
 /** 合并手动题 + 自动生成题 */
@@ -85,6 +86,82 @@ function buildQuizSet(count, excludeIds, yakuIds) {
   return questions.map(q => shuffleOptions(q));
 }
 
+/** 计算各役种弱项权重 */
+function _calcWeaknessWeights() {
+  const wrongBook = storage.getWrongBook();
+  const yakuAggs = storage.getYakuAggregates();
+
+  // 统计每个役种的错题数
+  const wrongCounts = {};
+  wrongBook.forEach(w => {
+    wrongCounts[w.yakuId] = (wrongCounts[w.yakuId] || 0) + 1;
+  });
+
+  const marks = storage.getYakuMarks();
+
+  const weights = {};
+  yakus.forEach(y => {
+    const agg = yakuAggs[y.id] || { totalAnswered: 0, totalCorrect: 0 };
+    const accuracy = agg.totalAnswered > 0 ? agg.totalCorrect / agg.totalAnswered : 0;
+    const wrong = wrongCounts[y.id] || 0;
+    // 基础分：错题多 + 正确率低 = 权重高，新役种给 0.5 基础分
+    let weight = wrong + (1 - accuracy) * 5 + 0.5;
+    // 手动标记加成
+    if (marks[y.id] === 'review') weight *= 3;
+    if (marks[y.id] === 'mastered') weight *= 0.1;
+    weights[y.id] = weight;
+  });
+
+  return weights;
+}
+
+/** 加权随机采样 */
+function _weightedSample(pool, count, weights) {
+  const available = pool.filter(q => weights[q.yakuId] > 0);
+  if (available.length === 0) return shuffle([...pool]).slice(0, count);
+
+  const result = [];
+  const remaining = [...available];
+  let remainingWeights = remaining.map(q => weights[q.yakuId]);
+
+  for (let k = 0; k < count && remaining.length > 0; k++) {
+    const totalWeight = remainingWeights.reduce((s, w) => s + w, 0);
+    let rand = Math.random() * totalWeight;
+    let idx = 0;
+    for (; idx < remainingWeights.length; idx++) {
+      rand -= remainingWeights[idx];
+      if (rand <= 0) break;
+    }
+    idx = Math.min(idx, remaining.length - 1);
+    result.push(remaining[idx]);
+    // 移除已选，避免重复
+    remaining.splice(idx, 1);
+    remainingWeights.splice(idx, 1);
+  }
+
+  return result;
+}
+
+/** 按弱项出题：提高薄弱役种的出现概率 */
+function buildWeaknessQuizSet(count, excludeIds) {
+  const config = levels.quizConfig;
+  const fullPool = getFullPool();
+  const weights = _calcWeaknessWeights();
+
+  // 排除已做过的
+  let pool = fullPool;
+  if (excludeIds && excludeIds.length > 0) {
+    pool = pool.filter(q => !excludeIds.includes(q.id));
+  }
+  // 如果排除后不够，回退到全量
+  if (pool.length < (count || config.defaultCount)) {
+    pool = [...fullPool];
+  }
+
+  const questions = _weightedSample(pool, count || config.defaultCount, weights);
+  return questions.map(q => shuffleOptions(q));
+}
+
 /** 根据错题本生成复习题单 */
 function buildReviewSet(wrongBook, maxCount) {
   const config = levels.reviewConfig;
@@ -116,6 +193,7 @@ module.exports = {
   pickQuestions,
   shuffleOptions,
   buildQuizSet,
+  buildWeaknessQuizSet,
   buildReviewSet,
   getYakuById
 };

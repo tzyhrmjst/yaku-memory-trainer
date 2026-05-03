@@ -4,7 +4,20 @@ Page({
   data: {
     loading: true,
     stats: {},
-    wrongCount: 0
+    wrongCount: 0,
+    navBarHeight: 0,
+    statusBarHeight: 0
+  },
+
+  onLoad() {
+    const sys = wx.getSystemInfoSync();
+    const menu = wx.getMenuButtonBoundingClientRect();
+    const statusBarHeight = sys.statusBarHeight;
+    const navContentHeight = (menu.top - statusBarHeight) * 2 + menu.height;
+    this.setData({
+      statusBarHeight,
+      navBarHeight: statusBarHeight + navContentHeight
+    });
   },
 
   onShow() {
@@ -31,6 +44,10 @@ Page({
     wx.navigateTo({ url: '/pages/quiz/index' });
   },
 
+  goWeaknessQuiz() {
+    wx.navigateTo({ url: '/pages/quiz/index?mode=weakness' });
+  },
+
   goWrongBook() {
     wx.navigateTo({ url: '/pages/wrongbook/index' });
   },
@@ -41,7 +58,7 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '日麻役种记忆训练',
+      title: '日麻役种牌型记忆助手',
       path: '/pages/index/index',
       imageUrl: '/assets/images/mahjong-header.jpg'
     };
@@ -49,7 +66,7 @@ Page({
 
   onShareTimeline() {
     return {
-      title: '日麻役种记忆训练',
+      title: '日麻役种牌型记忆助手',
       query: '',
       imageUrl: '/assets/images/mahjong-header.jpg'
     };

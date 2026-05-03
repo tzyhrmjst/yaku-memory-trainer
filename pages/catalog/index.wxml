@@ -31,11 +31,5 @@
       />
     </view>
 
-    <!-- 底部按钮 -->
-    <view class="footer-btn">
-      <t-button theme="primary" size="large" block bindtap="onRandomQuiz">
-        随机练习
-      </t-button>
-    </view>
   </view>
 </view>

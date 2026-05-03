@@ -1,6 +1,7 @@
 // 题目自动生成器 — 从役种数据自动生成选择题
 const yakus = require('../data/yakus');
 const { generateHand } = require('./handGenerator');
+const { checkAllYaku } = require('./yakuChecker');
 
 // ===== 题型1: 看牌猜役 =====
 
@@ -47,6 +48,7 @@ const IMPLIED_OPTION_EXCLUDE = {
   'tsuuiisou': ['toitoiho', 'honroutou', 'yakuhai'],
   'suuankou': ['toitoiho', 'sanankou', 'mentsumo'],
   'suuankou_tanki': ['suuankou', 'toitoiho', 'sanankou'],
+  'toitoiho': ['suuankou', 'suuankou_tanki'],
   'pinfu': ['iipeikou', 'ryanpeikou'],
   'iipeikou': ['pinfu'],
   'ryanpeikou': ['iipeikou', 'pinfu'],
@@ -87,7 +89,7 @@ function inferOptionExcludesFromTiles(tiles) {
   if (hasHonor && suits.size === 0) ids.push('tsuuiisou');
   if (!hasSimple && hasTerminal && !hasHonor) ids.push('chinroutou', 'toitoiho');
   if (!hasSimple && (hasTerminal || hasHonor)) ids.push('honroutou');
-  if (tripletCount >= 4 && pairCount >= 1) ids.push('toitoiho');
+  if (tripletCount >= 4 && pairCount >= 1) ids.push('toitoiho', 'suuankou');
   if (['5z', '6z', '7z'].some(t => counts[t] >= 3)) ids.push('yakuhai');
 
   return ids;
@@ -125,28 +127,40 @@ function generateTileQuestion(yaku, allYakus, variant) {
     }
   }
 
-  // 从所有役种中筛选可作为错误选项的（排除自身 + 上下文冲突的）
+  // 役种判定引擎：找出该手牌实际成立的全部役种，排除出错误选项
+  const allSatisfied = checkAllYaku(hand.tiles, {
+    winTile: hand.winTile || '',
+    contextHint: hint
+  });
+  allSatisfied.forEach(id => excludeIds.add(id));
+
+  // 从所有役种中筛选可作为错误选项的
   let wrongPool = allYakus
     .filter(y => !excludeIds.has(y.id))
     .map(y => y.name);
 
   // 确保至少有3个不同的错误选项
   if (wrongPool.length < 3) {
-    // 放宽限制，排除所有特殊上下文排除项，只保留自排除
     const minimalExclude = new Set([yaku.id]);
     wrongPool = allYakus
       .filter(y => !minimalExclude.has(y.id))
       .map(y => y.name);
   }
 
-  // 去重并取3个
   const uniqueWrong = [...new Set(wrongPool)];
   const options = shuffle([yaku.name, ...pickRandom(uniqueWrong, 3)]);
 
-  // 生成解释文本
+  // 生成解释文本：展示此手牌成立的全部役种
+  const satisfiedNames = allSatisfied
+    .map(id => allYakus.find(y => y.id === id))
+    .filter(Boolean)
+    .map(y => y.name + '（' + y.nameJa + '）');
   let explanation = yaku.name + '（' + yaku.nameJa + '）' + '：' + yaku.description;
   if (hint) {
     explanation += ' 前提：' + hint + '。';
+  }
+  if (satisfiedNames.length > 1) {
+    explanation += ' 此手牌还含有：' + satisfiedNames.filter(n => !n.startsWith(yaku.name)).join('、') + '。';
   }
 
   return {

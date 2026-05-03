@@ -1,12 +1,32 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/catalog/index",
-    "pages/yaku-detail/index",
-    "pages/quiz/index",
-    "pages/review/index",
-    "pages/wrongbook/index",
-    "pages/profile/index"
+    "pages/index/index"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/catalog",
+      "pages": ["index"]
+    },
+    {
+      "root": "pages/yaku-detail",
+      "pages": ["index"]
+    },
+    {
+      "root": "pages/quiz",
+      "pages": ["index"]
+    },
+    {
+      "root": "pages/review",
+      "pages": ["index"]
+    },
+    {
+      "root": "pages/wrongbook",
+      "pages": ["index"]
+    },
+    {
+      "root": "pages/profile",
+      "pages": ["index"]
+    }
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"
@@ -14,7 +34,7 @@
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#1a3a4a",
-    "navigationBarTitleText": "日麻役种记忆",
+    "navigationBarTitleText": "日麻役种牌型记忆助手",
     "navigationBarTextStyle": "white"
   },
   "resolveAlias": {

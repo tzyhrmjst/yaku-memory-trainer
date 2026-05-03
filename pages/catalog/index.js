@@ -32,9 +32,5 @@ Page({
   onYakuTap(e) {
     const { yakuId } = e.detail;
     wx.navigateTo({ url: '/pages/yaku-detail/index?id=' + yakuId });
-  },
-
-  onRandomQuiz() {
-    wx.navigateTo({ url: '/pages/quiz/index' });
   }
 });

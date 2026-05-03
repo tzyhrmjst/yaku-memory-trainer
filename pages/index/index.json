@@ -1,9 +1,7 @@
 {
   "usingComponents": {
-    "t-button": "tdesign-miniprogram/button/button",
     "t-loading": "tdesign-miniprogram/loading/loading",
-    "stat-card": "../../components/stat-card/index",
-    "empty-state": "../../components/empty-state/index"
+    "stat-card": "../../components/stat-card/index"
   },
-  "navigationBarTitleText": "日麻役种记忆"
+  "navigationStyle": "custom"
 }

@@ -5,23 +5,19 @@ const levels = require('../data/levels');
 
 /** 总体学习统计 */
 function getOverallStats() {
-  const records = storage.getRecords();
+  const agg = storage.getOverallAggregates();
   const wrongBook = storage.getWrongBook();
-  const progress = storage.getDailyProgress() || {};
+  const allProgress = storage.getAllDailyProgress();
+  const today = storage.getDailyProgress();
 
-  const totalAnswered = records.length;
-  const totalCorrect = records.filter(r => r.isCorrect).length;
+  const totalAnswered = agg.totalAnswered;
+  const totalCorrect = agg.totalCorrect;
   const accuracy = totalAnswered > 0 ? Math.round(totalCorrect / totalAnswered * 100) : 0;
 
-  // 学习天数
-  const dates = [...new Set(records.map(r => r.date))];
+  // 学习天数 & 连续天数：用 dailyProgress keys（不会被裁剪，比 records 更可靠）
+  const dates = Object.keys(allProgress);
   const studyDays = dates.length;
-
-  // 连续学习天数
   const streak = calcStreak(dates);
-
-  // 今日
-  const today = storage.getDailyProgress();
 
   return {
     totalAnswered,
@@ -38,17 +34,17 @@ function getOverallStats() {
 
 /** 各役种掌握度统计 */
 function getYakuMastery() {
-  const records = storage.getRecords();
+  const yakuAggs = storage.getYakuAggregates();
   const wrongBook = storage.getWrongBook();
+  const threshold = levels.statsConfig.yakuMasteryThreshold;
 
   return yakus.map(yaku => {
-    const yakuRecords = records.filter(r => r.yakuId === yaku.id);
-    const correct = yakuRecords.filter(r => r.isCorrect).length;
-    const total = yakuRecords.length;
+    const agg = yakuAggs[yaku.id] || { totalAnswered: 0, totalCorrect: 0 };
+    const total = agg.totalAnswered;
+    const correct = agg.totalCorrect;
     const accuracy = total > 0 ? correct / total : 0;
 
     const yakuWrong = wrongBook.filter(w => w.yakuId === yaku.id);
-    const threshold = levels.statsConfig.yakuMasteryThreshold;
 
     return {
       yakuId: yaku.id,
@@ -66,7 +62,7 @@ function getYakuMastery() {
 
 /** 近7天学习趋势 */
 function getWeeklyTrend() {
-  const progress = storage.getDailyProgress() || {};
+  const progress = storage.getAllDailyProgress();
   const days = [];
 
   for (let i = 6; i >= 0; i--) {

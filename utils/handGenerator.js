@@ -134,7 +134,7 @@ function randomTriplet(allowedKinds, usage) {
   return makeTriplet(kind);
 }
 
-function randomSequence(allowedSuits, allowedStartNums, usage) {
+function randomSequence(allowedSuits, allowedStartNums, usage, allowedPool) {
   if (!allowedStartNums || allowedStartNums.length === 0) {
     allowedStartNums = [1, 2, 3, 4, 5, 6, 7];
   }
@@ -150,8 +150,14 @@ function randomSequence(allowedSuits, allowedStartNums, usage) {
       var needed = {};
       for (var t = 0; t < tiles.length; t++) {
         var tile = tiles[t];
+        // 若指定了牌池，则顺子的每一张牌都必须在池中
+        if (allowedPool && allowedPool.indexOf(tile) === -1) {
+          ok = false;
+          break;
+        }
         needed[tile] = (needed[tile] || 0) + 1;
       }
+      if (!ok) continue;
       for (var tile in needed) {
         if (needed.hasOwnProperty(tile) && !usage.canAdd(tile, needed[tile])) {
           ok = false;
@@ -221,6 +227,29 @@ function pickPinfuWinTile(groups) {
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
+function isSequenceGroup(group) {
+  if (!group || group.length !== 3) return false;
+  if (suitOf(group[0]) === 'z') return false;
+  var nums = group.map(numOf).sort(function(a, b) { return a - b; });
+  return nums[1] === nums[0] + 1 && nums[2] === nums[1] + 1;
+}
+
+function sequenceKey(group) {
+  if (!isSequenceGroup(group)) return null;
+  var nums = group.map(numOf).sort(function(a, b) { return a - b; });
+  return suitOf(group[0]) + '_' + nums[0];
+}
+
+function hasHonorTile(groups, pair) {
+  var allGroups = groups.concat([pair]);
+  for (var g = 0; g < allGroups.length; g++) {
+    for (var t = 0; t < allGroups[g].length; t++) {
+      if (isHonor(allGroups[g][t])) return true;
+    }
+  }
+  return false;
+}
+
 // 从牌池随机构建4组面子+1雀头的手牌
 function generateRestrictedHand(pool, options) {
   options = options || {};
@@ -239,18 +268,18 @@ function generateRestrictedHand(pool, options) {
       var group = null;
       if (allowSequences && allowTriplets) {
         if (Math.random() < 0.6) {
-          group = randomSequence(allowedSuits, allowedSeqStartNums, usage);
+          group = randomSequence(allowedSuits, allowedSeqStartNums, usage, pool);
         }
         if (!group) {
           group = randomTriplet(tripletPool, usage);
         }
         if (!group && allowSequences) {
-          group = randomSequence(allowedSuits, allowedSeqStartNums, usage);
+          group = randomSequence(allowedSuits, allowedSeqStartNums, usage, pool);
         }
       } else if (allowTriplets) {
         group = randomTriplet(tripletPool, usage);
       } else if (allowSequences) {
-        group = randomSequence(allowedSuits, allowedSeqStartNums, usage);
+        group = randomSequence(allowedSuits, allowedSeqStartNums, usage, pool);
       }
 
       if (!group) break;
@@ -522,9 +551,11 @@ function generateHonchantaiyaochuu() {
     }
 
     if (groups.length < 4) continue;
+    if (!groups.some(isSequenceGroup)) continue;
 
     var pair = randomPair(tripletPool, usage);
     if (!pair) continue;
+    if (!hasHonorTile(groups, pair)) continue;
 
     var tiles = buildHand(groups, pair);
     return {
@@ -561,6 +592,7 @@ function generateJunchanTaiyaochuu() {
     }
 
     if (groups.length < 4) continue;
+    if (!groups.some(isSequenceGroup)) continue;
 
     var pair = randomPair(TERMINAL_POOL, usage);
     if (!pair) continue;
@@ -814,7 +846,7 @@ function generateToitoiho() {
     allowTriplets: true
   });
   if (!result) return null;
-  result.contextHint = Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清';
+  result.contextHint = '该手牌已副露';
   return result;
 }
 
@@ -842,6 +874,12 @@ function generateIipeikou() {
     // 剩余2组随机顺子(保持门前清)
     while (groups.length < 4) {
       var seq = randomSequence(SUITS, null, usage);
+      if (seq && sequenceKey(seq) === (suit + '_' + startNum)) {
+        for (var st = 0; st < seq.length; st++) {
+          usage.add(seq[st], -1);
+        }
+        seq = null;
+      }
       if (!seq) {
         // 如果序子不够，用刻子
         var allKinds = [].concat(MAN_TILES, PIN_TILES, SOU_TILES, HONOR_TILES);
@@ -852,6 +890,13 @@ function generateIipeikou() {
     }
 
     if (groups.length < 4) continue;
+    var seqCounts = {};
+    for (var sg = 0; sg < groups.length; sg++) {
+      var key = sequenceKey(groups[sg]);
+      if (key) seqCounts[key] = (seqCounts[key] || 0) + 1;
+    }
+    var pairLikeSeqCount = Object.values(seqCounts).filter(function(c) { return c >= 2; }).length;
+    if (pairLikeSeqCount !== 1) continue;
 
     var allKinds = [].concat(MAN_TILES, PIN_TILES, SOU_TILES, HONOR_TILES);
     var pair = randomPair(allKinds, usage);
@@ -1127,6 +1172,87 @@ function generateSanshokuDoukou() {
   return null;
 }
 
+// ---- E类子: 槓子型 ----
+// 生成含 N 组槓子的完整手牌（N∈[1,4]）
+// 1槓=15张, 2槓=16张, 3槓=17张, 4槓=18张
+function generateKanHand(numKans) {
+  var allKinds = [].concat(MAN_TILES, PIN_TILES, SOU_TILES, HONOR_TILES);
+
+  for (var attempt = 0; attempt < 50; attempt++) {
+    var usage = createUsageTracker();
+    var groups = [];
+
+    // N 组槓子（每组 4 张相同牌）
+    var shuffled = shuffle(allKinds);
+    for (var k = 0; k < numKans; k++) {
+      var kind = shuffled[k];
+      if (!usage.canAdd(kind, 4)) { groups = null; break; }
+      usage.add(kind, 4);
+      groups.push([kind, kind, kind, kind]);
+    }
+    if (!groups || groups.length < numKans) continue;
+
+    // 补足普通面子（3 张一组）至总共 4 组
+    while (groups.length < 4) {
+      var group = null;
+      if (Math.random() < 0.6) {
+        group = randomSequence(SUITS, null, usage);
+      }
+      if (!group) {
+        group = randomTriplet(allKinds, usage);
+      }
+      if (!group) {
+        group = randomSequence(SUITS, null, usage);
+      }
+      if (!group) break;
+      groups.push(group);
+    }
+    if (groups.length < 4) continue;
+
+    // 雀头
+    var remaining = allKinds.filter(function(k) { return usage.canAdd(k, 2); });
+    var pair = randomPair(remaining, usage);
+    if (!pair) continue;
+
+    var tiles = buildHand(groups, pair);
+
+    // 验证：非槓子牌种不应出现4张（可能因刻子+顺子叠到4张）
+    var quadKinds = 0;
+    var kindCounts = {};
+    for (var ti = 0; ti < tiles.length; ti++) {
+      kindCounts[tiles[ti]] = (kindCounts[tiles[ti]] || 0) + 1;
+    }
+    for (var k in kindCounts) {
+      if (kindCounts[k] >= 4) quadKinds++;
+    }
+    if (quadKinds !== numKans) continue;
+
+    return { tiles: tiles, winTile: pickWinTile(groups, pair), groups: groups, pair: pair };
+  }
+  return null;
+}
+
+function generateRinshanKaihou() {
+  var result = generateKanHand(1);
+  if (!result) return null;
+  result.contextHint = '该手牌已副露，开槓后以岭上牌自摸和牌';
+  return result;
+}
+
+function generateSankantsu() {
+  var result = generateKanHand(3);
+  if (!result) return null;
+  result.contextHint = '该玩家已开3次槓';
+  return result;
+}
+
+function generateSuukantsu() {
+  var result = generateKanHand(4);
+  if (!result) return null;
+  result.contextHint = '该玩家已开4次槓';
+  return result;
+}
+
 // ---- E类: 时机型（通用手牌 + 特定contextHint） ----
 
 var PROCEDURAL_HINTS = {
@@ -1135,8 +1261,7 @@ var PROCEDURAL_HINTS = {
   'rinshan_kaihou': '该手牌已副露，开槓后以岭上牌自摸和牌',
   'chankan': '该手牌已副露，抢槓荣和（别家加槓时和了该牌）',
   'haitei': '该手牌已副露，以海底牌（最后一张牌）自摸和牌',
-  'houtei': '该手牌已副露，以河底牌（最后一张打出的牌）荣和',
-  'sankantsu': '该玩家已开3次槓'
+  'houtei': '该手牌已副露，以河底牌（最后一张打出的牌）荣和'
 };
 
 function generateProcedural(yakuId) {
@@ -1184,11 +1309,12 @@ var GENERATORS = {
   // E类
   'riichi': generateProcedural,
   'mentsumo': generateProcedural,
-  'rinshan_kaihou': generateProcedural,
+  'rinshan_kaihou': generateRinshanKaihou,
   'chankan': generateProcedural,
   'haitei': generateProcedural,
   'houtei': generateProcedural,
-  'sankantsu': generateProcedural
+  'sankantsu': generateSankantsu,
+  'suukantsu': generateSuukantsu
 };
 
 // 静态 fallback 表
@@ -1208,7 +1334,7 @@ function generateHand(yakuId, variant) {
   for (var attempt = 0; attempt < 3; attempt++) {
     try {
       var result = generator(yakuId, variant);
-      if (result && result.tiles && result.tiles.length === 14) {
+      if (result && result.tiles && result.tiles.length >= 14) {
       return {
         tiles: result.tiles,
         winTile: result.winTile || '',

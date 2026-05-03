@@ -1,4 +1,4 @@
-const { buildQuizSet, getYakuById } = require('../../utils/questionEngine');
+const { buildQuizSet, buildWeaknessQuizSet, getYakuById } = require('../../utils/questionEngine');
 const storage = require('../../utils/storage');
 
 Page({
@@ -10,12 +10,14 @@ Page({
     currentQuestion: null,
     totalQuestions: 0,
     progress: 0,
+    mode: 'random', // 'random' | 'weakness'
 
     // 答题状态
     answered: false,
     selectedIndex: -1,
     isCorrect: false,
     explanation: '',
+    optionStates: [],
 
     // 结算
     score: 0,
@@ -27,12 +29,15 @@ Page({
   onLoad(options) {
     const yakuId = options.yakuId || null;
     const yakuIds = yakuId ? [yakuId] : null;
+    const mode = options.mode === 'weakness' ? 'weakness' : 'random';
 
     // 获取已做过的题目ID，避免重复
     const records = storage.getRecords();
     const excludeIds = records.map(r => r.questionId);
 
-    const quizSet = buildQuizSet(10, excludeIds, yakuIds);
+    const quizSet = mode === 'weakness'
+      ? buildWeaknessQuizSet(10, excludeIds)
+      : buildQuizSet(10, excludeIds, yakuIds);
 
     if (quizSet.length === 0) {
       wx.showToast({ title: '暂无题目', icon: 'none' });
@@ -41,6 +46,7 @@ Page({
     }
 
     this.setData({
+      mode,
       quizSet,
       totalQuestions: quizSet.length,
       loading: false
@@ -60,6 +66,11 @@ Page({
       yakuInfo = getYakuById(question.yakuId);
     }
 
+    const optionStates = (question.options || []).map(text => ({
+      text,
+      state: 'normal'
+    }));
+
     this.setData({
       currentIndex: index,
       currentQuestion: question,
@@ -68,6 +79,7 @@ Page({
       selectedIndex: -1,
       isCorrect: false,
       explanation: '',
+      optionStates,
       yakuInfo
     });
   },
@@ -77,15 +89,15 @@ Page({
     if (this.data.answered) return;
 
     const selectedIndex = e.detail.index;
-    const isCorrect = selectedIndex === this.data.currentQuestion.answer;
-    const explanation = this.data.currentQuestion.explanation;
-
-    // 更新选项状态
     const question = this.data.currentQuestion;
-    question.options = question.options.map((opt, i) => {
-      if (i === question.answer) return { text: opt, state: 'correct' };
-      if (i === selectedIndex && !isCorrect) return { text: opt, state: 'wrong' };
-      return { text: opt, state: 'disabled' };
+    const isCorrect = selectedIndex === question.answer;
+    const explanation = question.explanation;
+
+    // 生成选项展示状态，不污染原始题目数据
+    const optionStates = this.data.optionStates.map((opt, i) => {
+      if (i === question.answer) return { ...opt, state: 'correct' };
+      if (i === selectedIndex) return { ...opt, state: 'wrong' };
+      return { ...opt, state: 'disabled' };
     });
 
     // 记录结果
@@ -97,7 +109,6 @@ Page({
       isCorrect
     });
 
-    // 存储记录
     storage.addRecord({
       questionId: question.id,
       yakuId: question.yakuId,
@@ -105,10 +116,8 @@ Page({
       isCorrect
     });
 
-    // 更新每日进度
     storage.updateDailyProgress(isCorrect, false);
 
-    // 错题加入错题本
     if (!isCorrect) {
       storage.addWrongQuestion(question.id, question.yakuId);
     }
@@ -118,7 +127,7 @@ Page({
       selectedIndex,
       isCorrect,
       explanation,
-      currentQuestion: question,
+      optionStates,
       correctCount: this.data.correctCount + (isCorrect ? 1 : 0),
       results
     });
@@ -141,7 +150,9 @@ Page({
 
   // 再练一次
   onRetry() {
-    const quizSet = buildQuizSet(10);
+    const quizSet = this.data.mode === 'weakness'
+      ? buildWeaknessQuizSet(10)
+      : buildQuizSet(10);
     this.setData({
       loading: false,
       completed: false,

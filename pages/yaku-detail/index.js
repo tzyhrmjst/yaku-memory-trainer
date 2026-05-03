@@ -1,10 +1,16 @@
 const yakus = require('../../data/yakus');
 const statsEngine = require('../../utils/statsEngine');
+const storage = require('../../utils/storage');
 
 const categoryMap = {
   basic: { name: '基础', theme: 'success' },
   advanced: { name: '进阶', theme: 'warning' },
   yakuman: { name: '役满', theme: 'danger' }
+};
+
+const MARK_LABELS = {
+  review: '重点复习',
+  mastered: '我已掌握'
 };
 
 function formatHanDisplay(han) {
@@ -17,7 +23,8 @@ function formatHanDisplay(han) {
 Page({
   data: {
     yaku: null,
-    masteryInfo: null
+    masteryInfo: null,
+    mark: '' // '' | 'review' | 'mastered'
   },
 
   onLoad(options) {
@@ -36,6 +43,7 @@ Page({
     const categoryInfo = categoryMap[yaku.category] || categoryMap.basic;
     const mastery = statsEngine.getYakuMastery();
     const masteryInfo = mastery.find(m => m.yakuId === id);
+    const marks = storage.getYakuMarks();
 
     this.setData({
       yaku: {
@@ -44,8 +52,18 @@ Page({
         categoryTheme: categoryInfo.theme,
         hanDisplay: formatHanDisplay(yaku.han)
       },
-      masteryInfo: masteryInfo || { accuracy: 0, totalAnswered: 0, masteryLevel: 'new' }
+      masteryInfo: masteryInfo || { accuracy: 0, totalAnswered: 0, masteryLevel: 'new' },
+      mark: marks[id] || ''
     });
+  },
+
+  onToggleMark(e) {
+    const newMark = e.currentTarget.dataset.mark;
+    const yakuId = this.data.yaku.id;
+    // 再次点击同一标记则取消
+    const nextMark = this.data.mark === newMark ? '' : newMark;
+    storage.setYakuMark(yakuId, nextMark);
+    this.setData({ mark: nextMark });
   },
 
   goQuiz() {

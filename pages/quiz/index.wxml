@@ -42,11 +42,11 @@
         <!-- 选项 -->
         <view class="options-list">
           <quiz-option
-            wx:for="{{currentQuestion.options}}"
+            wx:for="{{optionStates}}"
             wx:key="index"
             index="{{index}}"
-            text="{{item.text || item}}"
-            state="{{item.state || 'normal'}}"
+            text="{{item.text}}"
+            state="{{item.state}}"
             bind:select="onOptionSelect"
           />
         </view>

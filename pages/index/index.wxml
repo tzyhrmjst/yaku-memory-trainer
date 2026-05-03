@@ -1,4 +1,11 @@
 <view class="page">
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px; height: {{navBarHeight}}px;">
+    <view class="nav-content">
+      <text class="nav-title">日麻役种牌型记忆助手</text>
+    </view>
+  </view>
+
   <!-- 加载状态 -->
   <block wx:if="{{loading}}">
     <view class="loading-container">
@@ -11,7 +18,7 @@
     <view class="stats-section">
       <image class="stats-bg-image" src="/assets/images/mahjong-header.jpg" mode="aspectFill" />
       <view class="stats-header">
-        <text class="greeting">日麻役种记忆训练</text>
+        <text class="greeting">日麻役种牌型记忆助手</text>
       </view>
       <view class="stats-grid">
         <stat-card
@@ -51,6 +58,12 @@
           <view class="entry-icon">✏️</view>
           <view class="entry-name">开始练习</view>
           <view class="entry-desc">看牌猜役</view>
+        </view>
+
+        <view class="entry-card" bindtap="goWeaknessQuiz">
+          <view class="entry-icon">🎯</view>
+          <view class="entry-name">弱项练习</view>
+          <view class="entry-desc">针对薄弱环节</view>
         </view>
 
         <view class="entry-card" bindtap="goWrongBook">

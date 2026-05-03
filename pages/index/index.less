@@ -1,5 +1,29 @@
 @import '../../variable.less';
 
+// 自定义导航栏
+.nav-bar {
+  background: #0d3029;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.nav-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .loading-container {
   display: flex;
   justify-content: center;
@@ -70,10 +94,11 @@
 }
 
 .greeting {
-  font-size: 60rpx;
+  max-width: 100%;
+  font-size: 44rpx;
+  line-height: 1.18;
   font-weight: 700;
   color: #ffffff;
-  text-shadow: 0 3rpx 10rpx rgba(0, 0, 0, 0.32);
 }
 
 .stats-grid {

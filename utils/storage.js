@@ -1,11 +1,15 @@
 // 本地存储统一封装
 const PREFIX = 'mahjong_yaku_';
+const MAX_RECORDS = 500;
 
 const KEYS = {
   records: PREFIX + 'records',
   wrongBook: PREFIX + 'wrong_book',
   dailyProgress: PREFIX + 'daily_progress',
-  settings: PREFIX + 'settings'
+  settings: PREFIX + 'settings',
+  statsOverall: PREFIX + 'stats_overall',
+  statsYaku: PREFIX + 'stats_yaku',
+  yakuMarks: PREFIX + 'yaku_marks'
 };
 
 function get(key) {
@@ -54,12 +58,74 @@ function addRecord(record) {
     timestamp: Date.now(),
     date: formatDate(new Date())
   });
+
+  // 裁剪：只保留最近 N 条
+  if (records.length > MAX_RECORDS) {
+    records.splice(0, records.length - MAX_RECORDS);
+  }
   set(KEYS.records, records);
+
+  // 增量更新聚合统计
+  _updateAggregates(record);
+
   return records;
 }
 
-function getRecordsByYakuId(yakuId) {
-  return getRecords().filter(r => r.yakuId === yakuId);
+// ---- 聚合统计 ----
+
+function _ensureAggregates() {
+  let overall = get(KEYS.statsOverall);
+  let yaku = get(KEYS.statsYaku);
+
+  if (!overall || !yaku) {
+    // 懒构建：从已有 records 计算聚合（兼容老用户）
+    const records = getRecords();
+    overall = { totalAnswered: 0, totalCorrect: 0 };
+    yaku = {};
+
+    records.forEach(r => {
+      overall.totalAnswered++;
+      if (r.isCorrect) overall.totalCorrect++;
+      if (!yaku[r.yakuId]) yaku[r.yakuId] = { totalAnswered: 0, totalCorrect: 0 };
+      yaku[r.yakuId].totalAnswered++;
+      if (r.isCorrect) yaku[r.yakuId].totalCorrect++;
+    });
+
+    set(KEYS.statsOverall, overall);
+    set(KEYS.statsYaku, yaku);
+  }
+
+  return { overall, yaku };
+}
+
+function _updateAggregates(record) {
+  let overall = get(KEYS.statsOverall);
+  let yaku = get(KEYS.statsYaku);
+
+  // 存量用户首次答题时初始化聚合
+  if (!overall) {
+    _ensureAggregates();
+    overall = get(KEYS.statsOverall);
+    yaku = get(KEYS.statsYaku);
+  }
+
+  overall.totalAnswered++;
+  if (record.isCorrect) overall.totalCorrect++;
+  set(KEYS.statsOverall, overall);
+
+  if (!yaku[record.yakuId]) yaku[record.yakuId] = { totalAnswered: 0, totalCorrect: 0 };
+  yaku[record.yakuId].totalAnswered++;
+  if (record.isCorrect) yaku[record.yakuId].totalCorrect++;
+  set(KEYS.statsYaku, yaku);
+}
+
+function getOverallAggregates() {
+  return _ensureAggregates().overall;
+}
+
+function getYakuAggregates(yakuId) {
+  const yaku = _ensureAggregates().yaku;
+  return yakuId ? (yaku[yakuId] || { totalAnswered: 0, totalCorrect: 0 }) : yaku;
 }
 
 // ---- 错题本 ----
@@ -78,6 +144,7 @@ function addWrongQuestion(questionId, yakuId) {
       addedAt: Date.now(),
       reviewCount: 0,
       correctCount: 0,
+      consecutiveCorrect: 0,
       lastReviewed: null
     });
     set(KEYS.wrongBook, book);
@@ -96,10 +163,17 @@ function updateWrongReview(questionId, isCorrect) {
   const entry = book.find(w => w.questionId === questionId);
   if (entry) {
     entry.reviewCount++;
-    if (isCorrect) entry.correctCount++;
     entry.lastReviewed = Date.now();
+
+    if (isCorrect) {
+      entry.correctCount++;
+      entry.consecutiveCorrect = (entry.consecutiveCorrect || 0) + 1;
+    } else {
+      entry.consecutiveCorrect = 0;
+    }
+
     // 连续答对3次则移除
-    if (entry.correctCount >= 3) {
+    if (entry.consecutiveCorrect >= 3) {
       return removeWrongQuestion(questionId);
     }
     set(KEYS.wrongBook, book);
@@ -109,8 +183,12 @@ function updateWrongReview(questionId, isCorrect) {
 
 // ---- 每日进度 ----
 
+function getAllDailyProgress() {
+  return get(KEYS.dailyProgress) || {};
+}
+
 function getDailyProgress(dateStr) {
-  const progress = get(KEYS.dailyProgress) || {};
+  const progress = getAllDailyProgress();
   if (!dateStr) dateStr = formatDate(new Date());
   return progress[dateStr] || { answered: 0, correct: 0, reviewed: 0, date: dateStr };
 }
@@ -139,6 +217,25 @@ function updateSettings(newSettings) {
   return settings;
 }
 
+// ---- 役种标记 ----
+
+/** 获取所有役种标记 { yakuId: 'review' | 'mastered' } */
+function getYakuMarks() {
+  return get(KEYS.yakuMarks) || {};
+}
+
+/** 设置/清除某个役种的标记 */
+function setYakuMark(yakuId, mark) {
+  const marks = getYakuMarks();
+  if (mark) {
+    marks[yakuId] = mark;
+  } else {
+    delete marks[yakuId];
+  }
+  set(KEYS.yakuMarks, marks);
+  return marks;
+}
+
 // ---- 工具 ----
 
 function formatDate(date) {
@@ -152,13 +249,17 @@ module.exports = {
   init,
   getRecords,
   addRecord,
-  getRecordsByYakuId,
+  getOverallAggregates,
+  getYakuAggregates,
   getWrongBook,
   addWrongQuestion,
   removeWrongQuestion,
   updateWrongReview,
+  getAllDailyProgress,
   getDailyProgress,
   updateDailyProgress,
   getSettings,
-  updateSettings
+  updateSettings,
+  getYakuMarks,
+  setYakuMark
 };

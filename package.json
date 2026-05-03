@@ -1,5 +1,5 @@
 {
-  "name": "yaku-memory-trainer",
+  "name": "riichi-yaku-memory-helper",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   ],
   "author": "",
   "license": "MIT",
-  "description": "日麻役种记忆训练小程序 — 役种图鉴 + 选择题练习 + 错题本 + 本地复习",
+  "description": "日麻役种牌型记忆助手小程序 — 役种图鉴 + 选择题练习 + 错题本 + 本地复习",
   "dependencies": {
     "tdesign-miniprogram": "^1.11.2"
   },
