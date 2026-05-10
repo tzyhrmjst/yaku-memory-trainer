@@ -26,6 +26,10 @@
     {
       "root": "pages/profile",
       "pages": ["index"]
+    },
+    {
+      "root": "pages/analyzer",
+      "pages": ["index"]
     }
   ],
   "usingComponents": {

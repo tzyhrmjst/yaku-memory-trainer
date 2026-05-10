@@ -6,7 +6,7 @@ Page({
     stats: {},
     wrongCount: 0,
     navBarHeight: 0,
-    statusBarHeight: 0
+    statusBarHeight: 0,
   },
 
   onLoad() {
@@ -16,7 +16,7 @@ Page({
     const navContentHeight = (menu.top - statusBarHeight) * 2 + menu.height;
     this.setData({
       statusBarHeight,
-      navBarHeight: statusBarHeight + navContentHeight
+      navBarHeight: statusBarHeight + navContentHeight,
     });
   },
 
@@ -31,7 +31,7 @@ Page({
     this.setData({
       loading: false,
       stats,
-      wrongCount
+      wrongCount,
     });
   },
 
@@ -56,11 +56,15 @@ Page({
     wx.navigateTo({ url: '/pages/profile/index' });
   },
 
+  goAnalyzer() {
+    wx.navigateTo({ url: '/pages/analyzer/index' });
+  },
+
   onShareAppMessage() {
     return {
       title: '日麻役种牌型记忆助手',
       path: '/pages/index/index',
-      imageUrl: '/assets/images/mahjong-header.jpg'
+      imageUrl: '/assets/images/mahjong-header.jpg',
     };
   },
 
@@ -68,7 +72,7 @@ Page({
     return {
       title: '日麻役种牌型记忆助手',
       query: '',
-      imageUrl: '/assets/images/mahjong-header.jpg'
+      imageUrl: '/assets/images/mahjong-header.jpg',
     };
-  }
+  },
 });

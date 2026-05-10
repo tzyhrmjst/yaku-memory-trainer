@@ -1,0 +1,171 @@
+<view class="page">
+  <!-- 顶部状态区 -->
+  <view class="header-section">
+    <view class="header-title">手牌分析</view>
+    <view class="header-subtitle">选满14张牌，看看你的手牌离听牌还有多远</view>
+    <view class="header-bar">
+      <view class="header-count">已选 {{selectedCount}}/14</view>
+      <view class="header-clear" bindtap="onClear">清空重选</view>
+    </view>
+  </view>
+
+  <!-- 牌池选择区 -->
+  <view class="pool-section">
+    <view class="pool-grid">
+      <view
+        wx:for="{{allPoolTiles}}"
+        wx:key="code"
+        class="pool-tile {{item.count >= 4 ? 'pool-tile-full' : ''}} {{selectedCount >= 14 && item.count === 0 ? 'pool-tile-locked' : ''}}"
+        data-tile="{{item.code}}"
+        bindtap="onAddTile"
+      >
+        <image class="pool-tile-img" src="{{item.src}}" mode="aspectFit" />
+        <view class="pool-tile-badge" wx:if="{{item.count > 0}}">{{item.count}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 当前手牌区 -->
+  <view class="hand-section">
+    <view class="hand-title">你的手牌（点击可移除）</view>
+    <view class="hand-tiles">
+      <block wx:for="{{selectedDisplay}}" wx:key="index">
+        <view class="hand-tile" data-tile="{{item.code}}" bindtap="onRemoveTile">
+          <image class="hand-tile-img" src="{{item.src}}" mode="aspectFit" />
+        </view>
+      </block>
+      <block wx:for="{{emptySlots}}" wx:key="index">
+        <view class="hand-tile hand-tile-empty"></view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 分析结果区 -->
+  <view class="result-section" wx:if="{{analysis && analysis.valid}}">
+    <!-- 听牌进度 -->
+    <view class="result-card progress-card">
+      <view class="progress-header">
+        <text class="progress-icon">{{analysis.summary.shanten <= 0 ? '🎉' : '🎯'}}</text>
+        <view class="progress-info">
+          <text class="progress-label">距离听牌</text>
+          <text class="progress-value">{{analysis.summary.stepsText}}</text>
+        </view>
+      </view>
+      <!-- 三种路径 -->
+      <view class="paths-row">
+        <view class="path-item {{analysis.summary.bestShape === 'standard' ? 'path-best' : ''}}">
+          <view class="path-icon">🧱</view>
+          <text class="path-name">做面子</text>
+          <text class="path-num"
+            >{{analysis.summary.standardShanten <= -1 ? 'OK' : (analysis.summary.standardShanten + '步')}}</text
+          >
+        </view>
+        <view class="path-divider"></view>
+        <view class="path-item {{analysis.summary.bestShape === 'chiitoitsu' ? 'path-best' : ''}}">
+          <view class="path-icon">👯</view>
+          <text class="path-name">凑对子</text>
+          <text class="path-num"
+            >{{analysis.summary.chiitoiShanten <= -1 ? 'OK' : (analysis.summary.chiitoiShanten + '步')}}</text
+          >
+        </view>
+        <view class="path-divider"></view>
+        <view class="path-item {{analysis.summary.bestShape === 'kokushi' ? 'path-best' : ''}}">
+          <view class="path-icon">👑</view>
+          <text class="path-name">集幺九</text>
+          <text class="path-num"
+            >{{analysis.summary.kokushiShanten <= -1 ? 'OK' : (analysis.summary.kokushiShanten + '步')}}</text
+          >
+        </view>
+      </view>
+      <view class="progress-tip">{{analysis.summary.text}}</view>
+    </view>
+
+    <!-- 牌型分析：已完成牌型 或 适合发展的牌型 -->
+    <view class="result-card yaku-card" wx:if="{{analysis.summary.shanten <= -1}}">
+      <view class="result-card-title">已完成牌型</view>
+      <view class="yaku-list" wx:if="{{analysis.completedYaku.length > 0}}">
+        <view class="yaku-item" wx:for="{{analysis.completedYaku}}" wx:key="id">
+          <view class="yaku-header">
+            <text class="yaku-name">{{item.name}}</text>
+            <text class="yaku-han">{{item.han}}翻</text>
+          </view>
+        </view>
+      </view>
+      <view class="progress-tip" wx:else>这副牌已经成型</view>
+    </view>
+
+    <view class="result-card yaku-card" wx:elif="{{analysis.closestYaku.length > 0}}">
+      <view class="result-card-title">适合发展的牌型</view>
+      <view class="yaku-list">
+        <view class="yaku-item" wx:for="{{analysis.closestYaku}}" wx:key="id">
+          <view class="yaku-header">
+            <text class="yaku-emoji">{{item.emoji}}</text>
+            <text class="yaku-name">{{item.name}}</text>
+            <view class="yaku-meter">
+              <view class="yaku-meter-fill" style="width: {{item.score}}%;"></view>
+            </view>
+            <text class="yaku-score">{{item.score}}%</text>
+          </view>
+          <view class="yaku-tip" wx:if="{{item.tip}}">{{item.tip}}</view>
+          <view class="yaku-reasons">{{item.reasons[0]}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 建议打出的牌（未和牌时） -->
+    <view class="result-card discards-card" wx:if="{{analysis.summary.shanten > -1 && analysis.discards.length > 0}}">
+      <view class="result-card-title">建议打出的牌</view>
+
+      <!-- 推荐项 — 大卡片突出显示 -->
+      <view class="discard-hero" wx:if="{{analysis.discards[0]}}">
+        <view class="hero-badge">首选</view>
+        <view class="hero-body">
+          <image class="hero-tile-img" src="{{analysis.discards[0].tileSrc}}" mode="aspectFit" />
+          <view class="hero-info">
+            <text class="hero-title">打出这张牌</text>
+            <text class="hero-sub"
+              >打出后 {{analysis.discards[0].shantenAfterDiscard <= -1 ? '直接和牌' :
+              (analysis.discards[0].shantenAfterDiscard + ' 步听牌')}}，有 {{analysis.discards[0].ukeireKinds}}
+              种牌能帮到你</text
+            >
+          </view>
+        </view>
+        <view class="hero-ukeire" wx:if="{{analysis.discards[0].ukeireImages.length > 0}}">
+          <text class="hero-ukeire-label">摸到这些牌就能更进一步：</text>
+          <view class="hero-ukeire-tiles">
+            <image
+              wx:for="{{analysis.discards[0].ukeireImages}}"
+              wx:key="code"
+              src="{{item.src}}"
+              class="ukeire-tile-img"
+              mode="aspectFit"
+            />
+          </view>
+        </view>
+        <view class="hero-reason" wx:if="{{analysis.discards[0].reasons.length > 0}}">
+          {{analysis.discards[0].reasons[0]}}
+        </view>
+      </view>
+
+      <!-- 其他选择 -->
+      <view class="discard-others" wx:if="{{analysis.discards.length > 1}}">
+        <view class="others-title">其他选择</view>
+        <view class="discard-row" wx:for="{{analysis.discards}}" wx:key="tile" wx:if="{{index > 0}}">
+          <view class="discard-row-rank">#{{item.rank}}</view>
+          <image class="discard-row-img" src="{{item.tileSrc}}" mode="aspectFit" />
+          <view class="discard-row-info">
+            <text class="discard-row-shanten">打出后 {{item.shantenAfterDiscard + ' 步'}}</text>
+            <text class="discard-row-ukeire">{{item.ukeireKinds}}种{{item.ukeireCount}}张有用牌</text>
+          </view>
+          <view class="discard-row-reason">{{item.reasons[0]}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 无结果提示 -->
+  <view class="empty-hint" wx:if="{{!analysis && selectedCount > 0 && selectedCount < 14}}">
+    <text class="empty-icon">👆</text>
+    <text>还差 {{14 - selectedCount}} 张，选满后自动分析</text>
+  </view>
+</view>

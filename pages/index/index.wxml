@@ -77,6 +77,25 @@
           <view class="entry-name">我的进度</view>
           <view class="entry-desc">学习统计</view>
         </view>
+
+        <view class="entry-card" bindtap="goAnalyzer">
+          <view class="entry-icon">🀄</view>
+          <view class="entry-name">手牌分析</view>
+          <view class="entry-desc">向听与切牌建议</view>
+        </view>
+
+        <button
+          class="entry-card feedback-card"
+          open-type="contact"
+          session-from="home-feedback"
+          show-message-card="{{true}}"
+          send-message-title="日麻役种牌型记忆助手"
+          send-message-path="/pages/index/index"
+        >
+          <view class="entry-icon">💬</view>
+          <view class="entry-name">反馈建议</view>
+          <view class="entry-desc">问题反馈与建议</view>
+        </button>
       </view>
     </view>
   </block>
