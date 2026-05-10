@@ -338,8 +338,9 @@ function scoreKokushi(counts) {
     orphanCount += counts[mt.ORPHAN_INDICES[j]];
   }
 
-  var nonOrphanCount = sumCounts(counts) - orphanCount;
-  var shanten = Math.max(-1, sc.calcKokushiShanten(counts));
+  var total = sumCounts(counts);
+  var nonOrphanCount = total - orphanCount;
+  var shanten = Math.max(-1, total === 13 ? sc.calcKokushiShanten13(counts) : sc.calcKokushiShanten(counts));
   var score = uniqueOrphans >= 10 ? Math.min(100, uniqueOrphans * 7 + (hasPair ? 10 : 0)) : uniqueOrphans * 5;
   var distance = Math.max(0, 13 - uniqueOrphans);
 

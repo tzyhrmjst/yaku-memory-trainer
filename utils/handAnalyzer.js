@@ -293,7 +293,7 @@ function analyzeHand(options) {
     summaryTexts.push('只需再摸 ' + minShanten + ' 张有用的牌，就能听牌。');
   }
 
-  if (discards.length > 0 && discards[0].reasons.length > 0) {
+  if (minShanten > -1 && discards.length > 0 && discards[0].reasons.length > 0) {
     summaryTexts.push(discards[0].reasons[0]);
   }
 
