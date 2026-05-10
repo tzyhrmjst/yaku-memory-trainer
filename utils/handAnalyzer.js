@@ -54,34 +54,57 @@ var YAKU_COMPLETED_NAME = {
 };
 
 function getCompletedYaku(tiles) {
-  // 收集所有可能成立的役种（遍历每种可能的和牌张）
   var allIds = {};
 
-  // 先不带 winTile 跑一次（特殊牌形 + 组成役）
-  var baseResult = yc.checkAllYaku(tiles, {});
-  baseResult.forEach(function (id) {
-    allIds[id] = true;
-  });
-
-  // 枚举每张不同的牌作为和牌张，补全结构系役种（如平和需知道听牌形）
-  var seenTiles = {};
-  for (var i = 0; i < tiles.length; i++) {
-    var t = tiles[i];
-    if (seenTiles[t]) continue;
-    seenTiles[t] = true;
-    var result = yc.checkAllYaku(tiles, { winTile: t });
-    result.forEach(function (id) {
+  try {
+    // 先不带 winTile 跑一次（特殊牌形 + 组成役）
+    var baseResult = yc.checkAllYaku(tiles, {});
+    baseResult.forEach(function (id) {
       allIds[id] = true;
     });
+
+    // 枚举每张不同的牌作为和牌张，补全结构系役种（如平和需知道听牌形）
+    var seenTiles = {};
+    for (var i = 0; i < tiles.length; i++) {
+      var t = tiles[i];
+      if (seenTiles[t]) continue;
+      seenTiles[t] = true;
+      var result = yc.checkAllYaku(tiles, { winTile: t });
+      result.forEach(function (id) {
+        allIds[id] = true;
+      });
+    }
+  } catch (e) {
+    // checkAllYaku 失败时降级为直接检测组成役和特殊牌形
+    allIds = {};
+    try {
+      var counts = mt.tilesToCounts(tiles);
+      // 转换 counts 数组为对象格式供 yakuChecker 使用
+      var countObj = {};
+      for (var ci = 0; ci < 34; ci++) {
+        if (counts[ci] > 0) countObj[mt.ALL_TILES[ci]] = counts[ci];
+      }
+      // 特殊牌形
+      if (yc.checkKokushiMusou(countObj)) allIds['kokushi_musou'] = true;
+      if (yc.checkChiitoitsu(countObj)) allIds['chiitoitsu'] = true;
+      // 组成役
+      var compYaku = yc.checkCompositionYaku(countObj);
+      compYaku.forEach(function (id) {
+        allIds[id] = true;
+      });
+    } catch (e2) {
+      allIds = {};
+    }
   }
 
   var yakuList = [];
-  for (var id in allIds) {
+  var ids = Object.keys(allIds);
+  for (var i = 0; i < ids.length; i++) {
+    var id = ids[i];
     var han = yc.YAKU_HAN[id] || 0;
     var name = YAKU_COMPLETED_NAME[id] || id;
     yakuList.push({ id: id, name: name, han: han });
   }
-  // 按翻数降序排列
   yakuList.sort(function (a, b) {
     return b.han - a.han;
   });

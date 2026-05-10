@@ -91,7 +91,9 @@
           </view>
         </view>
       </view>
-      <view class="progress-tip" wx:else>这副牌已经成型</view>
+      <view class="progress-tip" wx:else
+        >这副牌结构完整，但没有役种。日麻中和牌至少需要一个役种，最常见的是门清状态下报听（立直）。可以尝试调整手牌加入断幺九、役牌等。</view
+      >
     </view>
 
     <view class="result-card yaku-card" wx:elif="{{analysis.closestYaku.length > 0}}">
