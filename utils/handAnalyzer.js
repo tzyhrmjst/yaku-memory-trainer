@@ -54,13 +54,33 @@ var YAKU_COMPLETED_NAME = {
 };
 
 function getCompletedYaku(tiles) {
-  var yakuSet = yc.checkAllYaku(tiles, {});
+  // 收集所有可能成立的役种（遍历每种可能的和牌张）
+  var allIds = {};
+
+  // 先不带 winTile 跑一次（特殊牌形 + 组成役）
+  var baseResult = yc.checkAllYaku(tiles, {});
+  baseResult.forEach(function (id) {
+    allIds[id] = true;
+  });
+
+  // 枚举每张不同的牌作为和牌张，补全结构系役种（如平和需知道听牌形）
+  var seenTiles = {};
+  for (var i = 0; i < tiles.length; i++) {
+    var t = tiles[i];
+    if (seenTiles[t]) continue;
+    seenTiles[t] = true;
+    var result = yc.checkAllYaku(tiles, { winTile: t });
+    result.forEach(function (id) {
+      allIds[id] = true;
+    });
+  }
+
   var yakuList = [];
-  yakuSet.forEach(function (id) {
+  for (var id in allIds) {
     var han = yc.YAKU_HAN[id] || 0;
     var name = YAKU_COMPLETED_NAME[id] || id;
     yakuList.push({ id: id, name: name, han: han });
-  });
+  }
   // 按翻数降序排列
   yakuList.sort(function (a, b) {
     return b.han - a.han;
