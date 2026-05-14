@@ -156,6 +156,64 @@
   border-radius: 4rpx;
 }
 
+// ===== 和牌条件选择区 =====
+.context-section {
+  margin: 0 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.context-title {
+  font-size: @font-size-lg;
+  font-weight: 700;
+  color: @text-primary;
+  margin-bottom: 20rpx;
+}
+
+.context-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 0;
+
+  & + & {
+    border-top: 1rpx solid #f0f0f0;
+  }
+}
+
+.context-label {
+  font-size: @font-size-default;
+  color: @text-primary;
+  font-weight: 500;
+}
+
+.context-segment {
+  display: flex;
+  border-radius: @radius-default;
+  overflow: hidden;
+  border: 2rpx solid @brand-color;
+}
+
+.context-option {
+  padding: 10rpx 28rpx;
+  font-size: @font-size-sm;
+  color: @brand-color;
+  background: #fff;
+  transition: all 0.15s;
+
+  & + & {
+    border-left: 2rpx solid @brand-color;
+  }
+}
+
+.context-option-active {
+  background: @brand-color;
+  color: #fff;
+  font-weight: 600;
+}
+
 // ===== 分析结果区 =====
 .result-section {
   padding: 0 16rpx;

@@ -8,6 +8,26 @@ var ya = require('./yakuAdvisor');
 var yc = require('./yakuChecker');
 
 // 已完成手牌的役种显示名
+var KUISAGARI_YAKU = {
+  sanshoku_doujun: { closed: 2, open: 1 },
+  ittsuu: { closed: 2, open: 1 },
+  honchantaiyaochuu: { closed: 2, open: 1 },
+  junchan_taiyaochuu: { closed: 3, open: 2 },
+  honitsu: { closed: 3, open: 2 },
+  chinitsu: { closed: 6, open: 5 },
+};
+
+function getYakuHan(id, context) {
+  var hasOpenMeld = !!(context && (context.hasOpenMeld || /已副露/.test(context.contextHint || '')));
+  var rule = KUISAGARI_YAKU[id];
+
+  if (rule) {
+    return hasOpenMeld ? rule.open : rule.closed;
+  }
+
+  return yc.YAKU_HAN[id] || 0;
+}
+
 var YAKU_COMPLETED_NAME = {
   tanyao: '断幺九',
   yakuhai: '役牌',
@@ -53,12 +73,15 @@ var YAKU_COMPLETED_NAME = {
   junsei_chuuren_poutou: '纯正九莲宝灯',
 };
 
-function getCompletedYaku(tiles) {
+function getCompletedYaku(tiles, context) {
   var allIds = {};
+  var contextHint = context && context.contextHint ? context.contextHint : '';
 
   try {
     // 先不带 winTile 跑一次（特殊牌形 + 组成役）
-    var baseResult = yc.checkAllYaku(tiles, {});
+    var baseResult = yc.checkAllYaku(tiles, {
+      contextHint: contextHint,
+    });
     baseResult.forEach(function (id) {
       allIds[id] = true;
     });
@@ -69,7 +92,10 @@ function getCompletedYaku(tiles) {
       var t = tiles[i];
       if (seenTiles[t]) continue;
       seenTiles[t] = true;
-      var result = yc.checkAllYaku(tiles, { winTile: t });
+      var result = yc.checkAllYaku(tiles, {
+        winTile: t,
+        contextHint: contextHint,
+      });
       result.forEach(function (id) {
         allIds[id] = true;
       });
@@ -101,7 +127,7 @@ function getCompletedYaku(tiles) {
   var ids = Object.keys(allIds);
   for (var i = 0; i < ids.length; i++) {
     var id = ids[i];
-    var han = yc.YAKU_HAN[id] || 0;
+    var han = getYakuHan(id, context);
     var name = YAKU_COMPLETED_NAME[id] || id;
     yakuList.push({ id: id, name: name, han: han });
   }
@@ -210,7 +236,7 @@ function analyzeHand(options) {
   var closestYaku = ya.evaluateYaku(counts14, context);
 
   // 4b. 已完成手牌的实际役种
-  var completedYaku = minShanten <= -1 ? getCompletedYaku(tiles) : [];
+  var completedYaku = minShanten <= -1 ? getCompletedYaku(tiles, context) : [];
 
   // 5. 切牌分析
   var ukeireResults = uc.calcAllUkeire(counts14, visibleCounts);

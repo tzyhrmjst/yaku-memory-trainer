@@ -27,6 +27,25 @@ const ORPHAN_SET   = new Set(['1m','9m','1p','9p','1s','9s','1z','2z','3z','4z',
 
 const SUITS = ['m', 'p', 's'];
 
+const MENZEN_ONLY_YAKU = new Set([
+  'riichi',
+  'double_riichi',
+  'ippatsu',
+  'mentsumo',
+  'pinfu',
+  'iipeikou',
+  'chiitoitsu',
+  'ryanpeikou',
+  'suuankou',
+  'suuankou_tanki',
+  'kokushi_musou',
+  'kokushi_musou_13men',
+  'chuuren_poutou',
+  'junsei_chuuren_poutou',
+  'tenhou',
+  'chiihou'
+]);
+
 // =========================================================================
 // Helpers
 // =========================================================================
@@ -696,8 +715,14 @@ function checkAllYaku(tiles, options) {
     results.delete('suukantsu');
   }
 
-  // 立直必然门前清（去除 mentsumo 如果已立直，因为立直已涵盖）
-  // 但在quiz场景保留两者以完整展示
+  // 统一兜底：副露时移除所有门清限定役
+  if (context.hasFuro) {
+    for (const id of [...results]) {
+      if (MENZEN_ONLY_YAKU.has(id)) {
+        results.delete(id);
+      }
+    }
+  }
 
   // 排序：按番数从低到高
   const sorted = sortByHan([...results]);
@@ -748,5 +773,6 @@ module.exports = {
   checkHonorYaku,
   parseContext,
   checkContextYaku,
-  YAKU_HAN
+  YAKU_HAN,
+  MENZEN_ONLY_YAKU
 };

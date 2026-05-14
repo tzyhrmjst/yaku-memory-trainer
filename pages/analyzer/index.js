@@ -25,6 +25,8 @@ Page({
     selectedDisplay: [],
     emptySlots: [],
     analysis: null,
+    winMethod: 'tsumo',
+    hasOpenMeld: false,
   },
 
   onLoad: function () {
@@ -109,13 +111,45 @@ Page({
     this._updateCounts([]);
   },
 
+  onWinMethodChange: function (e) {
+    this.setData({
+      winMethod: e.currentTarget.dataset.value,
+    });
+
+    if (this.data.selectedTiles.length === 14) {
+      this.runAnalysis();
+    }
+  },
+
+  onOpenMeldChange: function (e) {
+    this.setData({
+      hasOpenMeld: e.detail.value,
+    });
+
+    if (this.data.selectedTiles.length === 14) {
+      this.runAnalysis();
+    }
+  },
+
   runAnalysis: function () {
     var self = this;
     var tiles = this.data.selectedTiles;
     if (tiles.length !== 14) return;
 
     setTimeout(function () {
-      var result = ha.analyzeHand({ tiles: tiles });
+      var contextHint = [];
+
+      contextHint.push(self.data.hasOpenMeld ? '已副露' : '门前清');
+      contextHint.push(self.data.winMethod === 'tsumo' ? '自摸' : '荣和');
+
+      var result = ha.analyzeHand({
+        tiles: tiles,
+        context: {
+          contextHint: contextHint.join('，'),
+          hasOpenMeld: self.data.hasOpenMeld,
+          winMethod: self.data.winMethod,
+        },
+      });
       self._enrichAnalysis(result);
       self.setData({ analysis: result });
     }, 50);

@@ -40,6 +40,32 @@
     </view>
   </view>
 
+  <!-- 和牌条件选择 -->
+  <view class="context-section">
+    <view class="context-title">和牌条件</view>
+
+    <view class="context-row">
+      <text class="context-label">和牌方式</text>
+      <view class="context-segment">
+        <view
+          class="context-option {{winMethod === 'tsumo' ? 'context-option-active' : ''}}"
+          data-value="tsumo"
+          bindtap="onWinMethodChange"
+        >自摸</view>
+        <view
+          class="context-option {{winMethod === 'ron' ? 'context-option-active' : ''}}"
+          data-value="ron"
+          bindtap="onWinMethodChange"
+        >荣和</view>
+      </view>
+    </view>
+
+    <view class="context-row">
+      <text class="context-label">有吃/碰/明杠</text>
+      <switch checked="{{hasOpenMeld}}" bindchange="onOpenMeldChange" />
+    </view>
+  </view>
+
   <!-- 分析结果区 -->
   <view class="result-section" wx:if="{{analysis && analysis.valid}}">
     <!-- 听牌进度 -->
@@ -92,7 +118,7 @@
         </view>
       </view>
       <view class="progress-tip" wx:else
-        >这副牌结构完整，但没有役种。日麻中和牌至少需要一个役种，最常见的是门清状态下报听（立直）。可以尝试调整手牌加入断幺九、役牌等。</view
+        >这副牌结构完整，但当前和牌条件下没有役。请确认是否门前清自摸，或是否具备立直、断幺九、役牌等其他役。</view
       >
     </view>
 
