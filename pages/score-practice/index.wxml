@@ -30,7 +30,11 @@
     </view>
 
     <!-- 题目牌面 + 条件 -->
-    <block wx:if="{{!completed}}">
+    <block wx:if="{{loading}}">
+      <view class="loading-card">出题中...</view>
+    </block>
+
+    <block wx:elif="{{!completed && currentQuestion}}">
       <view class="question-card">
         <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
         <view class="question-prompt">这手牌应如何计分？</view>
@@ -78,7 +82,7 @@
         </view>
         <view class="submit-row">
           <view class="submit-btn {{!answered && (!selectedHan || !selectedFu || !selectedPoint) ? 'submit-btn-disabled' : ''}}"
-            bindtap="{{answered ? 'onNext' : 'onSubmit'}}">{{answered ? (isLastQuestion ? '查看结果' : '下一题') : '提交答案'}}</view>
+            bindtap="onPrimaryAction">{{answered ? (isLastQuestion ? '查看结果' : '下一题') : '提交答案'}}</view>
         </view>
       </view>
 

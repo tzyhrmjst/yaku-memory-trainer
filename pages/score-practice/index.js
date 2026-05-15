@@ -151,6 +151,9 @@ Page({
   },
 
   onSubmit: function () {
+    if (!this.data.currentQuestion || this.data.answered) return;
+    if (!this.data.selectedHan || !this.data.selectedFu || !this.data.selectedPoint) return;
+
     var answer = this.data.currentQuestion.answer;
     var hanCorrect = this.data.selectedHan === answer.han;
     var fuCorrect = this.data.selectedFu === answer.fu;
@@ -163,6 +166,14 @@ Page({
       isCorrect: isCorrect,
       correctCount: newCorrectCount
     });
+  },
+
+  onPrimaryAction: function () {
+    if (this.data.answered) {
+      this.onNext();
+      return;
+    }
+    this.onSubmit();
   },
 
   onNext: function () {
