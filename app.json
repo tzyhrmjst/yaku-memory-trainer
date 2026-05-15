@@ -30,6 +30,10 @@
     {
       "root": "pages/analyzer",
       "pages": ["index"]
+    },
+    {
+      "root": "pages/score-practice",
+      "pages": ["index"]
     }
   ],
   "usingComponents": {

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "tile-hand": "../../components/tile-hand/index"
+  },
+  "navigationBarTitleText": "算分练习"
+}

@@ -1,0 +1,240 @@
+<view class="page">
+  <!-- 顶部标题 + 模式切换 -->
+  <view class="score-header">
+    <view class="score-title">算分练习</view>
+    <view class="mode-tabs">
+      <view
+        class="mode-tab {{mode === 'quiz' ? 'mode-tab-active' : ''}}"
+        data-value="quiz"
+        bindtap="onModeChange"
+      >出题练习</view>
+      <view
+        class="mode-tab {{mode === 'free' ? 'mode-tab-active' : ''}}"
+        data-value="free"
+        bindtap="onModeChange"
+      >自由练习</view>
+    </view>
+  </view>
+
+  <!-- ============================ -->
+  <!-- 出题练习模式 -->
+  <!-- ============================ -->
+  <block wx:if="{{mode === 'quiz'}}">
+
+    <!-- 难度选择 -->
+    <view class="quiz-bar" wx:if="{{!completed}}">
+      <view class="difficulty-tabs">
+        <view class="diff-tab {{difficulty === 'basic' ? 'diff-tab-active' : ''}}" data-value="basic" bindtap="onDifficultyChange">入门</view>
+        <view class="diff-tab {{difficulty === 'advanced' ? 'diff-tab-active' : ''}}" data-value="advanced" bindtap="onDifficultyChange">进阶</view>
+      </view>
+    </view>
+
+    <!-- 题目牌面 + 条件 -->
+    <block wx:if="{{!completed}}">
+      <view class="question-card">
+        <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
+        <view class="question-prompt">这手牌应如何计分？</view>
+      </view>
+
+      <view class="context-strip">
+        <text class="strip-item">{{currentQuestion.context.isMenzen ? '门前清' : '副露'}}</text>
+        <text class="strip-sep">·</text>
+        <text class="strip-item">{{currentQuestion.context.winMethod === 'tsumo' ? '自摸' : '荣和'}}</text>
+        <text class="strip-sep">·</text>
+        <text class="strip-item">{{currentQuestion.context.isDealer ? '庄家' : '子家'}}</text>
+        <text class="strip-sep">·</text>
+        <text class="strip-item">{{currentQuestion.context.riichi ? '立直' : '未立直'}}</text>
+        <block wx:if="{{currentQuestion.context.doraCount > 0}}">
+          <text class="strip-sep">·</text>
+          <text class="strip-item">宝牌{{currentQuestion.context.doraCount}}</text>
+        </block>
+      </view>
+
+      <!-- 答题 -->
+      <view class="answer-section">
+        <view class="answer-group">
+          <view class="group-label">番数</view>
+          <view class="group-options">
+            <view wx:for="{{currentQuestion.options.han}}" wx:key="*this"
+              class="answer-option {{selectedHan === item ? 'answer-option-active' : ''}} {{answered && selectedHan !== item && currentQuestion.answer.han === item ? 'answer-option-correct' : ''}} {{answered && selectedHan === item && selectedHan !== currentQuestion.answer.han ? 'answer-option-wrong' : ''}}"
+              data-value="{{item}}" bindtap="onSelectHan">{{item}}番</view>
+          </view>
+        </view>
+        <view class="answer-group">
+          <view class="group-label">符数</view>
+          <view class="group-options">
+            <view wx:for="{{currentQuestion.options.fu}}" wx:key="*this"
+              class="answer-option {{selectedFu === item ? 'answer-option-active' : ''}} {{answered && selectedFu !== item && currentQuestion.answer.fu === item ? 'answer-option-correct' : ''}} {{answered && selectedFu === item && selectedFu !== currentQuestion.answer.fu ? 'answer-option-wrong' : ''}}"
+              data-value="{{item}}" bindtap="onSelectFu">{{item}}符</view>
+          </view>
+        </view>
+        <view class="answer-group">
+          <view class="group-label">点数</view>
+          <view class="group-options point-options">
+            <view wx:for="{{currentQuestion.options.points}}" wx:key="*this"
+              class="answer-option point-option {{selectedPoint === item ? 'answer-option-active' : ''}} {{answered && selectedPoint !== item && currentQuestion.answer.pointText === item ? 'answer-option-correct' : ''}} {{answered && selectedPoint === item && selectedPoint !== currentQuestion.answer.pointText ? 'answer-option-wrong' : ''}}"
+              data-value="{{item}}" bindtap="onSelectPoint">{{item}}</view>
+          </view>
+        </view>
+        <view class="submit-row">
+          <view class="submit-btn {{!answered && (!selectedHan || !selectedFu || !selectedPoint) ? 'submit-btn-disabled' : ''}}"
+            bindtap="{{answered ? 'onNext' : 'onSubmit'}}">{{answered ? (isLastQuestion ? '查看结果' : '下一题') : '提交答案'}}</view>
+        </view>
+      </view>
+
+      <!-- 反馈 -->
+      <view class="explanation-card" wx:if="{{answered}}">
+        <view class="result-banner {{isCorrect ? 'result-correct' : 'result-wrong'}}">
+          <text class="result-icon">{{isCorrect ? '✓' : '✗'}}</text>
+          <text class="result-text">{{isCorrect ? '回答正确！' : '回答错误'}}</text>
+        </view>
+        <view class="correct-answer">
+          正确答案：<text class="answer-highlight">{{currentQuestion.answer.han}}番{{currentQuestion.answer.fu}}符，{{currentQuestion.context.isDealer ? '庄家' : '子家'}}{{currentQuestion.context.winMethod === 'tsumo' ? '自摸' : '荣和'}} {{currentQuestion.answer.pointText}}</text>
+        </view>
+        <view class="yaku-list">
+          <text class="section-label">成立役种：</text>
+          <block wx:for="{{currentQuestion.answer.yaku}}" wx:key="id">
+            <text class="yaku-tag">{{item.name}} {{item.han}}番</text>
+          </block>
+        </view>
+        <view class="fu-breakdown">
+          <text class="section-label">符数拆解：</text>
+          <block wx:for="{{currentQuestion.answer.fuDetails}}" wx:key="name">
+            <text class="fu-item">{{item.name}} {{item.fu > 0 ? item.fu + '符' : ''}}</text>
+          </block>
+          <text class="fu-total">合计 {{currentQuestion.answer.fuSubtotal}}符，进位为 {{currentQuestion.answer.fu}}符</text>
+        </view>
+        <view class="explanation-text">{{currentQuestion.answer.explanation}}</view>
+      </view>
+    </block>
+
+    <!-- 完成结算 -->
+    <block wx:else>
+      <view class="result-card">
+        <view class="result-title">本轮练习结束</view>
+        <view class="result-stats">
+          <view class="stat-item"><text class="stat-label">得分</text><text class="stat-value">{{score}}分</text></view>
+          <view class="stat-item"><text class="stat-label">答对</text><text class="stat-value">{{correctCount}} / {{questions.length}}</text></view>
+          <view class="stat-item"><text class="stat-label">正确率</text><text class="stat-value">{{accuracy}}%</text></view>
+        </view>
+        <view class="result-actions">
+          <view class="action-btn action-retry" bindtap="onRetry">再练一次</view>
+          <view class="action-btn action-home" bindtap="onGoHome">返回首页</view>
+        </view>
+      </view>
+    </block>
+
+  </block>
+
+  <!-- ============================ -->
+  <!-- 自由练习模式 -->
+  <!-- ============================ -->
+  <block wx:else>
+
+    <!-- 牌池选择 -->
+    <view class="pool-section">
+      <view class="pool-grid">
+        <view wx:for="{{allPoolTiles}}" wx:key="code"
+          class="pool-tile {{item.count >= 4 ? 'pool-tile-full' : ''}} {{selectedCount >= 14 && item.count === 0 ? 'pool-tile-locked' : ''}}"
+          data-tile="{{item.code}}" bindtap="onFreeAddTile">
+          <image class="pool-tile-img" src="{{item.src}}" mode="aspectFit" />
+          <view class="pool-tile-badge" wx:if="{{item.count > 0}}">{{item.count}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 当前手牌 -->
+    <view class="hand-section">
+      <view class="hand-bar">
+        <view class="hand-title">你的手牌（点击可移除）</view>
+        <view class="hand-clear" bindtap="onFreeClear" wx:if="{{selectedCount > 0}}">清空</view>
+      </view>
+      <view class="hand-tiles">
+        <block wx:for="{{selectedDisplay}}" wx:key="index">
+          <view class="hand-tile" data-tile="{{item.code}}" bindtap="onFreeRemoveTile">
+            <image class="hand-tile-img" src="{{item.src}}" mode="aspectFit" />
+          </view>
+        </block>
+        <block wx:for="{{emptySlots}}" wx:key="index">
+          <view class="hand-tile hand-tile-empty"></view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 对局条件 -->
+    <view class="context-section">
+      <view class="context-title">和牌条件</view>
+      <view class="context-row">
+        <text class="context-label">和牌方式</text>
+        <view class="context-segment">
+          <view class="context-option {{freeWinMethod === 'tsumo' ? 'context-option-active' : ''}}" data-value="tsumo" bindtap="onFreeWinMethodChange">自摸</view>
+          <view class="context-option {{freeWinMethod === 'ron' ? 'context-option-active' : ''}}" data-value="ron" bindtap="onFreeWinMethodChange">荣和</view>
+        </view>
+      </view>
+      <view class="context-row">
+        <text class="context-label">有吃/碰/明杠</text>
+        <switch checked="{{freeHasOpenMeld}}" bindchange="onFreeOpenMeldChange" />
+      </view>
+      <view class="context-row">
+        <text class="context-label">立直</text>
+        <switch checked="{{freeRiichi}}" bindchange="onFreeRiichiChange" />
+      </view>
+      <view class="context-row">
+        <text class="context-label">宝牌数</text>
+        <view class="dora-stepper">
+          <view class="dora-btn" data-value="{{freeDoraCount - 1}}" bindtap="onFreeDoraCountChange" wx:if="{{freeDoraCount > 0}}">−</view>
+          <text class="dora-val">{{freeDoraCount}}</text>
+          <view class="dora-btn" data-value="{{freeDoraCount + 1}}" bindtap="onFreeDoraCountChange" wx:if="{{freeDoraCount < 10}}">+</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 计算按钮 -->
+    <view class="calc-row">
+      <view class="calc-btn {{selectedCount === 14 ? '' : 'calc-btn-disabled'}}" bindtap="onFreeCalculate">计算得分</view>
+    </view>
+
+    <!-- 计算结果 -->
+    <view class="explanation-card" wx:if="{{freeCalculated && freeResult}}">
+      <view class="calc-result-header">
+        <text class="calc-result-label">计算结果</text>
+        <text class="calc-result-value">{{freeResult.totalHan}}番{{freeResult.fu}}符</text>
+        <text class="calc-result-limit" wx:if="{{freeResult.limit}}">（{{freeResult.limit.name}}）</text>
+      </view>
+
+      <!-- 双列得分：子家 | 庄家 -->
+      <view class="dual-result">
+        <view class="dual-col">
+          <view class="dual-col-label">子家（闲家）</view>
+          <view class="dual-col-value">{{freeResult.childResult.pointText}}</view>
+          <view class="dual-col-detail">{{freeResult.winMethod === 'tsumo' ? '自摸和了' : '荣和得点'}}</view>
+        </view>
+        <view class="dual-divider"></view>
+        <view class="dual-col">
+          <view class="dual-col-label">庄家（亲家）</view>
+          <view class="dual-col-value">{{freeResult.dealerResult.pointText}}</view>
+          <view class="dual-col-detail">{{freeResult.winMethod === 'tsumo' ? '自摸和了' : '荣和得点'}}</view>
+        </view>
+      </view>
+
+      <view class="yaku-list" wx:if="{{freeResult.yakuList.length > 0}}">
+        <text class="section-label">成立役种：</text>
+        <block wx:for="{{freeResult.yakuList}}" wx:key="id">
+          <text class="yaku-tag">{{item.name}} {{item.han}}番</text>
+        </block>
+      </view>
+      <view class="no-yaku-hint" wx:else>
+        <text class="section-label">未检测到役种。请确认手牌是否完整、和牌条件是否正确。</text>
+      </view>
+
+      <view class="fu-breakdown" wx:if="{{freeResult.fuDetails.length > 0}}">
+        <text class="section-label">符数拆解：</text>
+        <block wx:for="{{freeResult.fuDetails}}" wx:key="name">
+          <text class="fu-item">{{item.name}} {{item.fu > 0 ? item.fu + '符' : ''}}</text>
+        </block>
+        <text class="fu-total">合计 {{freeResult.fuSubtotal}}符，进位为 {{freeResult.fu}}符</text>
+      </view>
+    </view>
+
+  </block>
+</view>

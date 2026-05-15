@@ -1,0 +1,713 @@
+@import '../../variable.less';
+
+.page {
+  background: @bg-color;
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+// ===== 顶部进度区 =====
+.score-header {
+  background: @bg-white;
+  padding: 24rpx 32rpx 0;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.score-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: @text-primary;
+}
+
+// 模式切换
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 20rpx;
+  border-bottom: 2rpx solid #eee;
+}
+
+.mode-tab {
+  padding: 12rpx 32rpx;
+  font-size: @font-size-default;
+  color: @text-hint;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.mode-tab-active {
+  color: @brand-color;
+  font-weight: 700;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2rpx;
+    left: 20%;
+    width: 60%;
+    height: 4rpx;
+    background: @brand-color;
+    border-radius: 2rpx;
+  }
+}
+
+// 出题模式 — 进度 + 难度
+.quiz-bar {
+  background: @bg-white;
+  padding: 0 32rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.score-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+.progress-text {
+  font-size: @font-size-default;
+  font-weight: 600;
+  color: @brand-color;
+}
+
+.correct-text {
+  font-size: @font-size-sm;
+  color: @correct-color;
+}
+
+// 难度切换
+.difficulty-tabs {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.diff-tab {
+  padding: 8rpx 24rpx;
+  font-size: @font-size-xs;
+  color: @text-secondary;
+  background: #f5f5f5;
+  border-radius: 32rpx;
+  transition: all 0.15s;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.diff-tab-active {
+  background: @brand-color;
+  color: #fff;
+  font-weight: 600;
+}
+
+// ===== 题目牌面区 =====
+.question-card {
+  margin: 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.question-prompt {
+  text-align: center;
+  font-size: @font-size-default;
+  color: @text-secondary;
+  margin-top: 16rpx;
+  font-weight: 500;
+}
+
+// ===== 对局条件区 =====
+.context-strip {
+  margin: 0 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 16rpx 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.strip-item {
+  font-size: @font-size-xs;
+  color: @text-secondary;
+}
+
+.strip-sep {
+  font-size: @font-size-xs;
+  color: #ccc;
+  margin: 0 4rpx;
+}
+
+// ===== 答题区 =====
+.answer-section {
+  margin: 0 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.answer-group {
+  margin-bottom: 24rpx;
+
+  &:last-of-type {
+    margin-bottom: 20rpx;
+  }
+}
+
+.group-label {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.group-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.point-options {
+  gap: 12rpx;
+}
+
+.answer-option {
+  padding: 12rpx 24rpx;
+  font-size: @font-size-default;
+  color: @text-primary;
+  background: #f5f5f5;
+  border-radius: @radius-default;
+  border: 2rpx solid transparent;
+  transition: all 0.15s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.point-option {
+  font-size: @font-size-sm;
+  padding: 12rpx 20rpx;
+  min-width: 140rpx;
+  text-align: center;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.answer-option-active {
+  background: #e8f5e9;
+  border-color: @brand-color;
+  color: @brand-color;
+  font-weight: 600;
+}
+
+.answer-option-correct {
+  background: #e8f5e9;
+  border-color: @correct-color;
+  color: @correct-color;
+  font-weight: 600;
+}
+
+.answer-option-wrong {
+  background: #fce4ec;
+  border-color: @wrong-color;
+  color: @wrong-color;
+}
+
+// 提交按钮
+.submit-row {
+  text-align: center;
+}
+
+.submit-btn {
+  display: inline-block;
+  padding: 16rpx 64rpx;
+  font-size: @font-size-default;
+  font-weight: 600;
+  color: #fff;
+  background: @brand-color;
+  border-radius: @radius-default;
+  transition: all 0.15s;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.submit-btn-disabled {
+  background: #ccc;
+  pointer-events: none;
+}
+
+// ===== 反馈解析区 =====
+.explanation-card {
+  margin: 0 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.result-banner {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 20rpx;
+  border-radius: @radius-default;
+  margin-bottom: 20rpx;
+}
+
+.result-correct {
+  background: #e8f5e9;
+}
+
+.result-wrong {
+  background: #fce4ec;
+}
+
+.result-icon {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.result-correct .result-icon {
+  color: @correct-color;
+}
+
+.result-wrong .result-icon {
+  color: @wrong-color;
+}
+
+.result-text {
+  font-size: @font-size-lg;
+  font-weight: 600;
+}
+
+.result-correct .result-text {
+  color: @correct-color;
+}
+
+.result-wrong .result-text {
+  color: @wrong-color;
+}
+
+.correct-answer {
+  font-size: @font-size-default;
+  color: @text-primary;
+  margin-bottom: 16rpx;
+  line-height: 1.6;
+}
+
+.answer-highlight {
+  color: @brand-color;
+  font-weight: 700;
+}
+
+.section-label {
+  font-size: @font-size-sm;
+  color: @text-hint;
+  margin-right: 8rpx;
+}
+
+.yaku-list {
+  margin-bottom: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.yaku-tag {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  font-size: @font-size-xs;
+  color: @brand-color;
+  background: #e8f5e9;
+  border-radius: 16rpx;
+  font-weight: 500;
+}
+
+.fu-breakdown {
+  margin-bottom: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.fu-item {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  font-size: @font-size-xs;
+  color: #5d4037;
+  background: #efebe9;
+  border-radius: 16rpx;
+}
+
+.fu-total {
+  display: block;
+  width: 100%;
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  font-weight: 600;
+  margin-top: 6rpx;
+}
+
+.explanation-text {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  line-height: 1.6;
+}
+
+// ===== 完成结算区 =====
+.result-card {
+  margin: 32rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  text-align: center;
+}
+
+.result-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: @text-primary;
+  margin-bottom: 32rpx;
+}
+
+.result-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 40rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-label {
+  font-size: @font-size-xs;
+  color: @text-hint;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: @brand-color;
+}
+
+.result-actions {
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 16rpx 48rpx;
+  font-size: @font-size-default;
+  font-weight: 600;
+  border-radius: @radius-default;
+  transition: all 0.15s;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.action-retry {
+  background: @brand-color;
+  color: #fff;
+}
+
+.action-home {
+  background: #f5f5f5;
+  color: @text-secondary;
+}
+
+// ===== 自由模式 — 牌池 =====
+.pool-section {
+  padding: 12rpx 12rpx 0;
+}
+
+.pool-grid {
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 12rpx 10rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  justify-content: center;
+}
+
+.pool-tile {
+  position: relative;
+  width: 56rpx;
+  height: 76rpx;
+  border-radius: 4rpx;
+  overflow: hidden;
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.15s;
+
+  &:active { transform: scale(0.92); opacity: 0.8; }
+}
+
+.pool-tile-img { width: 100%; height: 100%; }
+
+.pool-tile-badge {
+  position: absolute;
+  top: -4rpx; right: -4rpx;
+  min-width: 32rpx; height: 32rpx;
+  border-radius: 16rpx;
+  background: @brand-color;
+  color: #fff;
+  font-size: 20rpx; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 6rpx;
+}
+
+.pool-tile-full { opacity: 0.35; pointer-events: none; }
+.pool-tile-locked { opacity: 0.4; }
+
+// ===== 自由模式 — 手牌 =====
+.hand-section {
+  margin: 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.hand-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.hand-title {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  font-weight: 600;
+}
+
+.hand-clear {
+  font-size: @font-size-xs;
+  color: @wrong-color;
+  padding: 4rpx 16rpx;
+  border-radius: @radius-default;
+  background: #fce4ec;
+}
+
+.hand-tiles {
+  display: flex; flex-wrap: wrap; gap: 10rpx;
+}
+
+.hand-tile {
+  width: 56rpx; height: 76rpx;
+  border-radius: 4rpx; overflow: hidden;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.15s;
+  &:active { transform: scale(0.9); opacity: 0.8; }
+}
+
+.hand-tile-img { width: 100%; height: 100%; }
+
+.hand-tile-empty {
+  border: 2rpx dashed #ddd;
+  background: #fafafa;
+  box-shadow: none;
+  border-radius: 4rpx;
+}
+
+// ===== 自由模式 — 条件区 =====
+.context-section {
+  margin: 0 16rpx 16rpx;
+  background: @bg-white;
+  border-radius: @radius-lg;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.context-title {
+  font-size: @font-size-lg;
+  font-weight: 700;
+  color: @text-primary;
+  margin-bottom: 20rpx;
+}
+
+.context-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 0;
+
+  & + & { border-top: 1rpx solid #f0f0f0; }
+}
+
+.context-label {
+  font-size: @font-size-default;
+  color: @text-primary;
+  font-weight: 500;
+}
+
+.context-segment {
+  display: flex;
+  border-radius: @radius-default;
+  overflow: hidden;
+  border: 2rpx solid @brand-color;
+}
+
+.context-option {
+  padding: 10rpx 28rpx;
+  font-size: @font-size-sm;
+  color: @brand-color;
+  background: #fff;
+  transition: all 0.15s;
+
+  & + & { border-left: 2rpx solid @brand-color; }
+}
+
+.context-option-active {
+  background: @brand-color;
+  color: #fff;
+  font-weight: 600;
+}
+
+// 宝牌步进器
+.dora-stepper {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.dora-btn {
+  width: 44rpx; height: 44rpx;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: @font-size-lg;
+  color: @text-primary;
+  font-weight: 600;
+}
+
+.dora-val {
+  font-size: @font-size-lg;
+  font-weight: 700;
+  color: @brand-color;
+  min-width: 40rpx;
+  text-align: center;
+}
+
+// ===== 自由模式 — 计算按钮 =====
+.calc-row {
+  margin: 0 16rpx 16rpx;
+  text-align: center;
+}
+
+.calc-btn {
+  display: inline-block;
+  padding: 18rpx 80rpx;
+  font-size: @font-size-lg;
+  font-weight: 700;
+  color: #fff;
+  background: @brand-color;
+  border-radius: @radius-default;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.15s;
+
+  &:active { opacity: 0.85; transform: scale(0.97); }
+}
+
+.calc-btn-disabled {
+  background: #ccc;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+// ===== 自由模式 — 计算结果 =====
+.calc-result-header {
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.calc-result-label {
+  display: block;
+  font-size: @font-size-xs;
+  color: @text-hint;
+  margin-bottom: 8rpx;
+}
+
+.calc-result-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: @brand-color;
+}
+
+.calc-result-limit {
+  display: block;
+  font-size: @font-size-sm;
+  color: @wrong-color;
+  font-weight: 600;
+  margin-top: 4rpx;
+}
+
+// 双列得分：子家 | 庄家
+.dual-result {
+  display: flex;
+  margin: 0 -24rpx;
+  border-top: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.dual-col {
+  flex: 1;
+  padding: 20rpx 16rpx;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.dual-col-label {
+  font-size: @font-size-xs;
+  color: @text-hint;
+  font-weight: 500;
+}
+
+.dual-col-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: @brand-color;
+  line-height: 1.3;
+  white-space: pre-wrap;
+}
+
+.dual-col-detail {
+  font-size: @font-size-xs;
+  color: @text-secondary;
+}
+
+.dual-divider {
+  width: 1rpx;
+  background: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.no-yaku-hint {
+  margin-bottom: 12rpx;
+}

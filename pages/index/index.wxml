@@ -84,6 +84,12 @@
           <view class="entry-desc">向听与切牌建议</view>
         </view>
 
+        <view class="entry-card" bindtap="goScorePractice">
+          <view class="entry-icon">🧮</view>
+          <view class="entry-name">算分练习</view>
+          <view class="entry-desc">番符与点数训练</view>
+        </view>
+
         <button
           class="entry-card feedback-card"
           open-type="contact"

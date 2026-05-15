@@ -60,6 +60,10 @@ Page({
     wx.navigateTo({ url: '/pages/analyzer/index' });
   },
 
+  goScorePractice() {
+    wx.navigateTo({ url: '/pages/score-practice/index' });
+  },
+
   onShareAppMessage() {
     return {
       title: '日麻役种牌型记忆助手',
