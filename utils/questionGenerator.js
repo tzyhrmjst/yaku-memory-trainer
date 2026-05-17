@@ -196,7 +196,7 @@ function generateConditionQuestions(yaku, otherYakus, questionsPerYaku) {
     const badPool = [];
     for (const other of otherYakus) {
       for (const cond of other.conditions) {
-        if (!isAmbiguous(cond, yaku) && cond !== correctCondition) {
+        if (!isAmbiguous(cond, yaku) && !isConditionTrueForYaku(cond, yaku) && cond !== correctCondition) {
           badPool.push(cond);
         }
       }
@@ -338,6 +338,72 @@ function isAmbiguous(candidate, targetYaku) {
   return false; // 安全
 }
 
+// ===== 事实标签系统 =====
+
+/**
+ * 从条件文案中解析出其所断言的事实标签
+ * 返回 { winMethods?, requiresMenzen?, kuisagari? } 或 null
+ */
+function parseConditionFacts(condition) {
+  const facts = {};
+
+  // 和牌方式断言
+  if (/自摸或荣和均可|和牌方式无要求|自摸或荣和均可成立/.test(condition)) {
+    facts.winMethods = ['tsumo', 'ron'];
+  } else if (/必须自摸|不能.*荣和|自摸方式|自摸成立|必须自摸(?!.*荣和)/.test(condition) &&
+             !/自摸或荣和均可|荣和.*自摸|自摸或荣和/.test(condition)) {
+    facts.winMethods = ['tsumo'];
+  } else if (/(?:荣和方式|以荣和|必须荣和|别家.*荣和|栄和)/.test(condition) &&
+             !/自摸/.test(condition) && !/荣和.*自摸|自摸.*荣和/.test(condition)) {
+    facts.winMethods = ['ron'];
+  }
+
+  // 门前清断言
+  if (/必须门前清|不能副露|不可副露/.test(condition) && !/不要求门前清/.test(condition)) {
+    facts.requiresMenzen = true;
+  } else if (/不要求门前清/.test(condition)) {
+    facts.requiresMenzen = false;
+  } else if (/可副露/.test(condition) && !/不[可能]副露/.test(condition)) {
+    facts.requiresMenzen = false;
+  }
+
+  // 食下断言
+  if (/副露后降|食下/.test(condition)) {
+    facts.kuisagari = true;
+  }
+
+  return Object.keys(facts).length > 0 ? facts : null;
+}
+
+/**
+ * 判断条件文案是否对目标役种也成立（即不能作为错误选项）
+ * 核心原则: 若 candidate 描述的事实对 targetYaku 也为真，则 candidate 不能当错误选项。
+ */
+function isConditionTrueForYaku(conditionText, targetYaku) {
+  const yakuFacts = targetYaku.facts;
+  if (!yakuFacts) return false;
+
+  const condFacts = parseConditionFacts(conditionText);
+  if (!condFacts) return false;
+
+  for (const [key, condValue] of Object.entries(condFacts)) {
+    const yakuValue = yakuFacts[key];
+    if (yakuValue === undefined) continue;
+
+    if (key === 'winMethods') {
+      const condSet = new Set(condValue);
+      const yakuSet = new Set(yakuValue);
+      // 候选条件的和牌方式集合必须与目标役种完全一致，否则该条件对目标役种不成立
+      if (condSet.size === yakuSet.size && [...condSet].every(m => yakuSet.has(m))) return true;
+    } else {
+      // 布尔类型事实：值相同即条件对目标役种也成立
+      if (condValue === yakuValue) return true;
+    }
+  }
+
+  return false;
+}
+
 // ===== 工具函数 =====
 
 function shuffle(arr) {
@@ -416,5 +482,7 @@ module.exports = {
   generateTileQuestion,
   generateConditionQuestions,
   isAmbiguous,
+  parseConditionFacts,
+  isConditionTrueForYaku,
   AMBIGUITY_GROUPS
 };

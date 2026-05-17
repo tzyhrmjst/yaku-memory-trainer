@@ -18,6 +18,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '由数牌2～8组成，不含任何幺九牌（1、9、字牌）的和牌。可副露。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '所有牌都是数牌2～8（万/饼/索）',
       '不能包含1、9和字牌',
@@ -35,6 +36,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '三元牌（白·发·中）或当前场风牌、自风牌的刻子/槓子，每个刻子计1番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '三元牌（白/发/中）的刻子或槓子，各计1番',
       '当前场风牌的刻子或槓子计1番',
@@ -53,6 +55,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '由4组顺子和1对雀头组成，必须门前清，听牌为两面听。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '手牌全部由顺子（4组）组成',
       '雀头不能是场风/自风/三元牌',
@@ -72,6 +75,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '门前清状态下听牌时，宣言立直（支付1000点立直棒）并和牌。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '手牌必须门前清（不能副露）',
       '处于听牌状态',
@@ -90,6 +94,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '门前清状态下，以自摸方式（从牌山摸牌）和牌。',
+    facts: { winMethods: ['tsumo'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '手牌必须门前清（不能副露）',
       '必须自摸和牌（自己摸到和了牌）',
@@ -107,6 +112,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '立直宣言后，在无人鸣牌的情况下，一巡内和牌。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '必须先宣言立直',
       '立直后一巡内和牌',
@@ -126,6 +132,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '手牌中包含两组完全相同的顺子。必须门前清。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '包含两组数字完全相同的顺子（如123m+123m）',
       '必须门前清（不能副露）',
@@ -143,6 +150,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '开槓后从岭上（王牌区）摸牌，以摸到的岭上牌和牌。',
+    facts: { winMethods: ['tsumo'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '以摸到的岭上牌（槓之后从王牌区摸的牌）和牌',
       '开槓后立即成立（槓→岭上摸牌→和牌）',
@@ -160,6 +168,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '别家进行加槓（从碰→槓）时，以荣和方式胡那张加槓牌。',
+    facts: { winMethods: ['ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '别家进行加槓时荣和',
       '以正在加槓的那张牌和牌',
@@ -177,6 +186,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '以牌山的最后一张牌（海底牌）自摸和牌。',
+    facts: { winMethods: ['tsumo'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '牌山只剩下最后一张牌',
       '摸到最后一张牌时和牌',
@@ -194,6 +204,7 @@ const yakus = [
     han: 1,
     category: 'basic',
     description: '以别家打出的最后一张牌（河底牌）荣和。',
+    facts: { winMethods: ['ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '牌山已无牌可摸',
       '以别家打出的最后一张牌（河底牌）荣和',
@@ -215,6 +226,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '万、饼、索三种花色各有相同数字的顺子。副露后降为1番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '万/饼/索三种花色都有同一数字的顺子（如234m+234p+234s）',
       '副露后降为1番（食下）',
@@ -232,6 +244,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '由7组不同的对子组成。必须门前清，固定25符。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '手牌由7组对子组成（共14张）',
       '必须门前清（不能副露）',
@@ -250,6 +263,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '由4组刻子（或槓）和1组雀头组成。可副露。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '手牌全部由刻子（或槓子）组成（4组刻子+1雀头）',
       '可副露，不影响番数',
@@ -267,6 +281,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '同种数牌的123、456、789三组顺子。副露后降为1番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '同种数牌组成123+456+789三组顺子',
       '副露后降为1番（食下）',
@@ -284,6 +299,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '所有顺子/刻子都包含幺九牌（1或9），且雀头也是幺九牌。副露后降为1番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '每个顺子或刻子都必须包含至少1张幺九牌（1、9或字牌）',
       '必须至少包含1组顺子',
@@ -303,6 +319,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '拥有3组没有碰过的刻子（暗刻）。可副露。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '包含3组暗刻（未碰出的刻子）',
       '第4组面子可以是顺子或明刻',
@@ -320,6 +337,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '在第一巡（无人鸣牌前）宣言立直。必须门前清。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '必须门前清（不能副露）',
       '第一巡即宣言立直（轮到自己前无人鸣牌）',
@@ -338,6 +356,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '白、发、中其中两种为刻子，剩下一种为雀头。合计至少4番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '包含白/发/中其中两种的刻子（或槓子）',
       '剩下一种三元牌作为雀头',
@@ -356,6 +375,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '手牌只包含老头牌（1、9）和字牌。必然与对对和或七对子复合。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '手牌只含幺九牌（1万/9万/1饼/9饼/1索/9索）和字牌',
       '不含数牌2～8',
@@ -373,6 +393,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '万、饼、索各有相同数字的刻子。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '万/饼/索三种花色都有同一数字的刻子（如555m+555p+555s）',
       '可副露，不影响番数',
@@ -390,6 +411,7 @@ const yakus = [
     han: 2,
     category: 'advanced',
     description: '一人开槓3次。可副露。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '一人开槓3次（不论明槓暗槓）',
       '可副露，不影响番数'
@@ -410,6 +432,7 @@ const yakus = [
     han: 3,
     category: 'advanced',
     description: '只包含一种数牌和字牌的手牌。副露后降为2番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '手牌只包含一种花色的数牌+字牌',
       '不含其他花色的数牌',
@@ -427,6 +450,7 @@ const yakus = [
     han: 3,
     category: 'advanced',
     description: '所有顺子/刻子都包含老头牌（1或9），雀头也是老头牌。不包含字牌。副露后降为2番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '每个顺子或刻子都必须包含至少1张老头牌（1或9）',
       '雀头也必须是老头牌（1或9）',
@@ -445,6 +469,7 @@ const yakus = [
     han: 3,
     category: 'advanced',
     description: '包含两组一杯口（即四组顺子两两完全相同）。必须门前清。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '包含两对完全相同的顺子（如两个123m+两个456p）',
       '必须门前清（不能副露）',
@@ -466,6 +491,7 @@ const yakus = [
     han: 6,
     category: 'advanced',
     description: '手牌只包含一种花色的数牌，不含字牌。副露后降为5番。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: true },
     conditions: [
       '手牌只包含一种花色的数牌（万/饼/索其中一种）',
       '不含字牌',
@@ -488,6 +514,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '包含4组没有碰过的刻子（全部暗刻）。必须门前清。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '手牌全部由刻子组成（4组暗刻+1雀头）',
       '4组刻子都必须是没有碰过的暗刻',
@@ -506,6 +533,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '集齐全部13种幺九牌（1万/9万/1饼/9饼/1索/9索/东南西北白发中）各1张，再加任意1张幺九牌组成对子。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '必须集齐全部13种幺九牌各至少1张',
       '其中某一种幺九牌有2张（作为雀头）',
@@ -524,6 +552,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '包含白、发、中三种三元牌的全部刻子。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '包含白/发/中三种三元牌的刻子（或槓子）',
       '可副露',
@@ -541,6 +570,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '东/南/西/北中三种为刻子，剩下一种为雀头。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '包含三种风牌的刻子（或槓子）',
       '剩下一种风牌作为雀头',
@@ -559,6 +589,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '手牌全部由字牌组成。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '手牌只含字牌（东南西北白发中）',
       '不含任何数牌',
@@ -576,6 +607,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '只包含索子2/3/4/6/8以及发（绿牌）。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '手牌只能包含索子2、3、4、6、8和发',
       '不含其他牌',
@@ -593,6 +625,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '手牌全部由老头牌（1万/9万/1饼/9饼/1索/9索）组成，不含字牌。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '手牌只含老头牌（1万/9万/1饼/9饼/1索/9索）',
       '不含字牌',
@@ -611,6 +644,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '同种数牌组成1112345678999的形，再加任意一张该花色的牌。必须门前清。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '同种数牌组成1112345678999的形状',
       '必须门前清（不能副露）',
@@ -629,6 +663,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '庄家（亲家）在配牌时就已和牌。',
+    facts: { winMethods: ['tsumo'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '必须是庄家（亲家）',
       '配牌阶段即已和牌（第一巡摸牌前）',
@@ -647,6 +682,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '子家在无人鸣牌的状态下，第一巡自摸和牌。',
+    facts: { winMethods: ['tsumo'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '必须是子家（非庄家）',
       '第一巡自摸和牌',
@@ -666,6 +702,7 @@ const yakus = [
     han: 13,
     category: 'yakuman',
     description: '一人开槓4次。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '一人开槓4次（不论明槓暗槓）',
       '可副露',
@@ -687,6 +724,7 @@ const yakus = [
     han: 26,
     category: 'yakuman',
     description: '包含东南西北四种风牌的刻子。双倍役满。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: false, kuisagari: false },
     conditions: [
       '包含东南西北四种风牌的刻子（或槓子）',
       '可副露',
@@ -705,6 +743,7 @@ const yakus = [
     han: 26,
     category: 'yakuman',
     description: '四暗刻以单骑听牌（听雀头）和牌。双倍役满。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '四暗刻的所有条件必须满足',
       '听牌方式必须是单骑（只差雀头）',
@@ -724,6 +763,7 @@ const yakus = [
     han: 26,
     category: 'yakuman',
     description: '国士无双以13面听形式（已有13种幺九牌各1张，听14种中的任意1张）和牌。双倍役满。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '国士无双的所有条件必须满足',
       '听牌状态为13面听（任何幺九牌都能和）',
@@ -742,6 +782,7 @@ const yakus = [
     han: 26,
     category: 'yakuman',
     description: '九莲宝灯以9面听形式（1112345678999听1～9中任意一张）和牌。双倍役满。',
+    facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '九莲宝灯的所有条件必须满足',
       '听牌状态为9面听（同花色1～9中任意一张都能和）',
@@ -764,6 +805,7 @@ const yakus = [
     han: 5,
     category: 'yakuman',
     description: '荒牌流局时，自家打出的牌全是幺九牌且一张都没有被别家鸣牌（吃/碰/槓）。',
+    facts: { winMethods: [], requiresMenzen: true, kuisagari: false },
     conditions: [
       '自家打出的所有牌都是幺九牌（1、9、字牌）',
       '打出的幺九牌没有被别家鸣牌（吃/碰/槓）',
