@@ -31,19 +31,17 @@ Page({
 
     // ===== 出题模式 =====
     loading: false,
-    completed: false,
     difficulty: 'basic',
-    questions: [],
-    currentIndex: 0,
     currentQuestion: null,
     selectedHan: null,
     selectedFu: null,
     selectedPoint: '',
     answered: false,
     isCorrect: false,
+    totalAnswered: 0,
     correctCount: 0,
-    score: 0,
-    accuracy: 0,
+    stopped: false,
+    sessionAccuracy: 0,
 
     // ===== 自由模式 =====
     allPoolTiles: [],
@@ -94,7 +92,7 @@ Page({
     if (mode === this.data.mode) return;
     this.setData({
       mode: mode,
-      completed: false,
+      stopped: false,
       freeResult: null,
       freeCalculated: false
     });
@@ -109,31 +107,27 @@ Page({
   startPractice: function () {
     var self = this;
     var diff = this.data.difficulty;
-    this.setData({ loading: true, completed: false, currentIndex: 0, correctCount: 0 });
+    this.setData({ loading: true, stopped: false, totalAnswered: 0, correctCount: 0 });
 
     setTimeout(function () {
-      var questions;
+      var q;
       if (USE_RANDOM_SCORE_QUESTIONS) {
-        questions = srg.buildRandomScorePracticeSet(10, { difficulty: diff });
-      } else {
-        questions = sg.buildScorePracticeSet(10, { difficulty: diff });
+        q = srg.buildRandomScoreQuestion({ difficulty: diff });
       }
-      self.setData({ loading: false, questions: questions });
-      self.loadCurrentQuestion();
+      if (!q) {
+        var fallback = sg.buildScorePracticeSet(1, { difficulty: diff });
+        q = fallback[0];
+      }
+      self.setData({
+        loading: false,
+        currentQuestion: q,
+        selectedHan: null,
+        selectedFu: null,
+        selectedPoint: '',
+        answered: false,
+        isCorrect: false
+      });
     }, 100);
-  },
-
-  loadCurrentQuestion: function () {
-    var q = this.data.questions[this.data.currentIndex];
-    this.setData({
-      currentQuestion: q,
-      selectedHan: null,
-      selectedFu: null,
-      selectedPoint: '',
-      answered: false,
-      isCorrect: false,
-      isLastQuestion: this.data.currentIndex >= this.data.questions.length - 1
-    });
   },
 
   onDifficultyChange: function (e) {
@@ -168,11 +162,13 @@ Page({
     var pointCorrect = this.data.selectedPoint === answer.pointText;
     var isCorrect = hanCorrect && fuCorrect && pointCorrect;
     var newCorrectCount = this.data.correctCount + (isCorrect ? 1 : 0);
+    var newTotal = this.data.totalAnswered + 1;
 
     this.setData({
       answered: true,
       isCorrect: isCorrect,
-      correctCount: newCorrectCount
+      correctCount: newCorrectCount,
+      totalAnswered: newTotal
     });
   },
 
@@ -185,21 +181,36 @@ Page({
   },
 
   onNext: function () {
-    var nextIndex = this.data.currentIndex + 1;
-    if (nextIndex >= this.data.questions.length) {
-      this.finishPractice();
-    } else {
-      this.setData({ currentIndex: nextIndex });
-      this.loadCurrentQuestion();
-    }
+    var self = this;
+    var diff = this.data.difficulty;
+    this.setData({ loading: true });
+
+    setTimeout(function () {
+      var q;
+      if (USE_RANDOM_SCORE_QUESTIONS) {
+        q = srg.buildRandomScoreQuestion({ difficulty: diff });
+      }
+      if (!q) {
+        var fallback = sg.buildScorePracticeSet(1, { difficulty: diff });
+        q = fallback[0];
+      }
+      self.setData({
+        loading: false,
+        currentQuestion: q,
+        selectedHan: null,
+        selectedFu: null,
+        selectedPoint: '',
+        answered: false,
+        isCorrect: false
+      });
+    }, 100);
   },
 
-  finishPractice: function () {
-    var total = this.data.questions.length;
+  onEndSession: function () {
+    var total = this.data.totalAnswered;
     var correct = this.data.correctCount;
-    var accuracy = Math.round(correct / total * 100);
-    var score = correct * 10;
-    this.setData({ completed: true, score: score, accuracy: accuracy });
+    var accuracy = total > 0 ? Math.round(correct / total * 100) : 0;
+    this.setData({ stopped: true, sessionAccuracy: accuracy });
   },
 
   onRetry: function () {
@@ -366,8 +377,8 @@ Page({
       }
     }
 
-    // 加宝牌
-    if (this.data.freeDoraCount > 0) {
+    // 加宝牌（仅在存在非宝牌役时累加）
+    if (this.data.freeDoraCount > 0 && yakuList.length > 0) {
       totalHan += this.data.freeDoraCount;
     }
 

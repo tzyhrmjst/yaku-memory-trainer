@@ -139,15 +139,11 @@ function tryRedDora(tiles, redRate) {
 
 /**
  * 生成指示牌以达到目标宝牌数
+ * makeIndicatorsForCount 内部已处理赤五扣除，此处直接透传
  */
 function generateIndicators(tiles, desiredCount) {
   if (desiredCount <= 0) return [];
-
-  var redCount = tiles.filter(function (t) { return dora.isRedFive(t); }).length;
-  var remaining = desiredCount - redCount;
-  if (remaining <= 0) return [];
-
-  return dora.makeIndicatorsForCount(tiles, remaining);
+  return dora.makeIndicatorsForCount(tiles, desiredCount);
 }
 
 function makeHanOptions(correctHan) {
@@ -239,8 +235,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
 
   if (doraCount > 0) {
     doraIndicators = generateIndicators(tiles, doraCount);
-    // 如果无法生成目标数量的指示牌，回退到0
-    if (doraIndicators.length === 0) doraCount = 0;
+    // 用 countDora 核实实际宝牌数（赤五 + 指示牌），以实际为准
+    doraCount = dora.countDora(tiles, doraIndicators, true);
   }
 
   // 构建答案
