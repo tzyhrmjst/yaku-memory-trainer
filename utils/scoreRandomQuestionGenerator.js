@@ -1,0 +1,411 @@
+// 算分随机题生成器 — 从役种生成器实时构造算分题
+// 采用"按目标役种生成 + 概率宝牌 + 模板兜底"策略
+
+var hg = require('./handGenerator');
+var builder = require('./scoreAnswerBuilder');
+var sg = require('./scoreQuestionGenerator');
+var dora = require('./dora');
+var sc = require('./scoreCalculator');
+
+// 难度役种池（只包含有算法生成器的役种）
+var BASIC_YAKU_POOL = [
+  'tanyao', 'yakuhai', 'pinfu', 'chiitoitsu', 'riichi', 'mentsumo'
+];
+
+var ADVANCED_YAKU_POOL = [
+  'tanyao', 'yakuhai', 'pinfu', 'chiitoitsu', 'riichi', 'mentsumo',
+  'toitoiho', 'honitsu', 'ittsuu', 'sanshoku_doujun',
+  'honchantaiyaochuu', 'sanankou', 'shousangen'
+];
+
+var MIXED_YAKU_POOL = [
+  'tanyao', 'yakuhai', 'pinfu', 'chiitoitsu', 'riichi', 'mentsumo',
+  'toitoiho', 'honitsu', 'chinitsu', 'ittsuu', 'sanshoku_doujun',
+  'honchantaiyaochuu', 'junchan_taiyaochuu', 'sanankou', 'shousangen',
+  'ryanpeikou', 'sanshoku_doukou', 'honroutou',
+  'daisangen', 'shousuushii', 'tsuuiisou', 'ryuuiisou', 'chinroutou',
+  'chuuren_poutou', 'suuankou', 'kokushi_musou'
+];
+
+// 上下文概率配置
+var CONTEXT_PROB = {
+  basic: { ronRate: 0.70, childRate: 0.75, menzenRate: 0.80, riichiInMenzenRate: 0.55 },
+  advanced: { ronRate: 0.60, childRate: 0.65, menzenRate: 0.60, riichiInMenzenRate: 0.45 },
+  mixed: { ronRate: 0.55, childRate: 0.60, menzenRate: 0.55, riichiInMenzenRate: 0.40 }
+};
+
+// 宝牌概率配置
+var DORA_PROB = {
+  basic: { appearRate: 0.35, dist: [0.65, 0.25, 0.10], maxDora: 2 },
+  advanced: { appearRate: 0.60, dist: [0.40, 0.25, 0.20, 0.10, 0.05], maxDora: 5 },
+  mixed: { appearRate: 0.75, dist: [0.25, 0.20, 0.15, 0.15, 0.15, 0.10], maxDora: 8 }
+};
+
+// 赤五概率配置
+var RED_DORA_RATE = {
+  basic: 0.05,
+  advanced: 0.15,
+  mixed: 0.25
+};
+
+function randomFloat() {
+  return Math.random();
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  var result = arr.slice();
+  for (var i = result.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = result[i];
+    result[i] = result[j];
+    result[j] = tmp;
+  }
+  return result;
+}
+
+/**
+ * 根据概率分布随机选出宝牌数
+ */
+function pickDoraCount(dist) {
+  var r = randomFloat();
+  var cumulative = 0;
+  for (var i = 0; i < dist.length; i++) {
+    cumulative += dist[i];
+    if (r < cumulative) return i;
+  }
+  return dist.length - 1;
+}
+
+/**
+ * 生成随机上下文
+ */
+function randomContext(difficulty) {
+  var prob = CONTEXT_PROB[difficulty] || CONTEXT_PROB.basic;
+  var isDealer = randomFloat() >= prob.childRate;
+  var isMenzen = randomFloat() < prob.menzenRate;
+  var hasOpenMeld = !isMenzen;
+  var riichi = false;
+
+  if (isMenzen && randomFloat() < prob.riichiInMenzenRate) {
+    riichi = true;
+  }
+
+  // 自风: 入门优先非场风，进阶随机
+  var seatWind;
+  if (difficulty === 'basic') {
+    seatWind = randomFloat() < 0.7 ? '2z' : '1z';
+  } else {
+    seatWind = ['1z', '2z', '3z', '4z'][randomInt(0, 3)];
+  }
+
+  return {
+    winMethod: randomFloat() < prob.ronRate ? 'ron' : 'tsumo',
+    isDealer: isDealer,
+    isMenzen: isMenzen,
+    hasOpenMeld: hasOpenMeld,
+    roundWind: '1z',
+    seatWind: seatWind,
+    riichi: riichi
+  };
+}
+
+/**
+ * 尝试在手牌中替换赤五
+ */
+function tryRedDora(tiles, redRate) {
+  if (randomFloat() >= redRate) return tiles.slice();
+
+  var result = tiles.slice();
+  var redCandidates = [];
+
+  for (var i = 0; i < result.length; i++) {
+    var t = result[i];
+    if (t === '5m' || t === '5p' || t === '5s') {
+      redCandidates.push(i);
+    }
+  }
+
+  if (redCandidates.length === 0) return result;
+
+  var idx = redCandidates[randomInt(0, redCandidates.length - 1)];
+  var tile = result[idx];
+  result[idx] = '0' + tile[1];
+  return result;
+}
+
+/**
+ * 生成指示牌以达到目标宝牌数
+ */
+function generateIndicators(tiles, desiredCount) {
+  if (desiredCount <= 0) return [];
+
+  var redCount = tiles.filter(function (t) { return dora.isRedFive(t); }).length;
+  var remaining = desiredCount - redCount;
+  if (remaining <= 0) return [];
+
+  return dora.makeIndicatorsForCount(tiles, remaining);
+}
+
+function makeHanOptions(correctHan) {
+  var pool = [1, 2, 3, 4, 5];
+  if (correctHan >= 5) {
+    pool = [correctHan - 2, correctHan - 1, correctHan, correctHan + 1, correctHan + 2]
+      .filter(function (h) { return h > 0; });
+  }
+  if (correctHan >= 8) {
+    pool = [correctHan - 3, correctHan - 2, correctHan - 1, correctHan, correctHan + 1]
+      .filter(function (h) { return h > 0; });
+  }
+  if (correctHan >= 13) {
+    pool = [11, 12, 13, 26, 39];
+  }
+  if (pool.indexOf(correctHan) === -1) pool.push(correctHan);
+  return pool.sort(function (a, b) { return a - b; });
+}
+
+function makeFuOptions(correctFu) {
+  var pool = [20, 25, 30, 40, 50];
+  if (correctFu > 0 && pool.indexOf(correctFu) === -1) pool.push(correctFu);
+  return pool.sort(function (a, b) { return a - b; });
+}
+
+function makePointOptions(answer, context) {
+  var correct = answer.pointText;
+  var candidates = [];
+
+  [20, 25, 30, 40, 50].filter(function (f) { return f !== answer.fu && f > 0; })
+    .forEach(function (f) {
+      try {
+        var r = sc.calculatePoints({
+          han: answer.han, fu: f,
+          winMethod: context.winMethod, isDealer: context.isDealer
+        });
+        if (r.pointText !== correct && candidates.indexOf(r.pointText) === -1) {
+          candidates.push(r.pointText);
+        }
+      } catch (e) {}
+    });
+
+  [answer.han - 1, answer.han + 1].forEach(function (h) {
+    if (h <= 0) return;
+    try {
+      var r = sc.calculatePoints({
+        han: h, fu: answer.fu,
+        winMethod: context.winMethod, isDealer: context.isDealer
+      });
+      if (r.pointText !== correct && candidates.indexOf(r.pointText) === -1) {
+        candidates.push(r.pointText);
+      }
+    } catch (e) {}
+  });
+
+  var distractors = candidates.slice(0, 3);
+  var options = [correct].concat(distractors);
+  var seen = {};
+  options = options.filter(function (o) {
+    if (seen[o]) return false;
+    seen[o] = true;
+    return true;
+  });
+  while (options.length < 4) options.push(correct);
+  return shuffle(options);
+}
+
+function makeOptions(answer, context) {
+  return {
+    han: makeHanOptions(answer.han),
+    fu: makeFuOptions(answer.fu),
+    points: makePointOptions(answer, context)
+  };
+}
+
+/**
+ * 单题构建：从手牌生成完整的算分题
+ */
+function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
+  // 尝试赤五替换
+  var redRate = RED_DORA_RATE[difficulty] || 0;
+  var tiles = tryRedDora(handTiles, redRate);
+
+  // 宝牌：分布已包含0枚概率，直接从分布采样
+  var doraConfig = DORA_PROB[difficulty] || DORA_PROB.basic;
+  var doraCount = pickDoraCount(doraConfig.dist);
+  doraCount = Math.min(doraCount, doraConfig.maxDora);
+  var doraIndicators = [];
+
+  if (doraCount > 0) {
+    doraIndicators = generateIndicators(tiles, doraCount);
+    // 如果无法生成目标数量的指示牌，回退到0
+    if (doraIndicators.length === 0) doraCount = 0;
+  }
+
+  // 构建答案
+  var ctx = {};
+  var keys = Object.keys(context);
+  for (var ki = 0; ki < keys.length; ki++) { ctx[keys[ki]] = context[keys[ki]]; }
+  ctx.doraIndicators = doraIndicators;
+  ctx.winTile = winTile;
+
+  var result = builder.buildAnswer(tiles, ctx);
+
+  if (!result.valid) return null;
+
+  var answer = result.answer;
+
+  // 入门难度过滤：不超过4番（含宝牌）或恰为满贯教学题
+  if (difficulty === 'basic') {
+    if (answer.han > 4 && answer.han < 5) {
+      // 4番以上但不到5番（即4番+非满贯）= 允许
+    } else if (answer.han > 5) {
+      return null; // 太高番，过滤
+    }
+    // 入门宝牌最多2
+    if (answer.doraCount > 2) return null;
+  }
+
+  // 进阶过滤：避免役满
+  if (difficulty === 'advanced' && answer.han >= 13) return null;
+
+  // 过滤 yaku 过多导致解释过长的（入门最多4个役种，进阶6个）
+  var yakuCount = answer.yaku.filter(function (y) { return y.id !== 'dora'; }).length;
+  if (difficulty === 'basic' && yakuCount > 4) return null;
+  if (difficulty === 'advanced' && yakuCount > 6) return null;
+
+  // 生成选项
+  var options = makeOptions(answer, context);
+
+  return {
+    id: 'rand-' + difficulty + '-' + Date.now() + '-' + randomInt(0, 9999),
+    source: 'random',
+    difficulty: difficulty,
+    tiles: tiles,
+    winTile: winTile,
+    context: {
+      winMethod: context.winMethod,
+      isDealer: context.isDealer,
+      isMenzen: context.isMenzen,
+      hasOpenMeld: context.hasOpenMeld,
+      roundWind: context.roundWind,
+      seatWind: context.seatWind,
+      riichi: context.riichi,
+      doraCount: answer.doraCount,
+      doraIndicators: doraIndicators,
+      doraDisplays: result.doraDisplays
+    },
+    answer: {
+      han: answer.han,
+      fu: answer.fu,
+      fuSubtotal: answer.fuSubtotal,
+      limit: answer.limit,
+      pointText: answer.pointText,
+      totalPoints: answer.totalPoints,
+      yaku: answer.yaku,
+      fuDetails: answer.fuDetails,
+      explanation: answer.explanation
+    },
+    options: options
+  };
+}
+
+/**
+ * 单题随机生成（含重试）
+ */
+function buildRandomScoreQuestion(opts) {
+  opts = opts || {};
+  var difficulty = opts.difficulty || 'basic';
+  var maxAttempts = opts.maxAttempts || 80;
+
+  var pool;
+  if (difficulty === 'advanced') pool = ADVANCED_YAKU_POOL;
+  else if (difficulty === 'mixed') pool = MIXED_YAKU_POOL;
+  else pool = BASIC_YAKU_POOL;
+
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    // 随机选目标役种
+    var yakuId = pool[Math.floor(Math.random() * pool.length)];
+
+    // 生成手牌
+    var variant = randomInt(0, 9);
+    var hand = hg.generateHand(yakuId, variant);
+    if (!hand || !hand.tiles || hand.tiles.length < 14) continue;
+
+    // 随机上下文
+    var context = randomContext(difficulty);
+
+    // 对于 riichi/mentsumo 这类纯上下文役，手牌可能不特定
+    // 需要确保 context 与 hand.contextHint 兼容
+    if (hand.contextHint) {
+      if (hand.contextHint.indexOf('已副露') !== -1 && context.hasOpenMeld !== true) {
+        context.hasOpenMeld = true;
+        context.isMenzen = false;
+        context.riichi = false;
+      }
+      if (hand.contextHint.indexOf('已宣言立直') !== -1 && !context.riichi) {
+        context.riichi = true;
+        context.isMenzen = true;
+        context.hasOpenMeld = false;
+      }
+    }
+
+    // 构建题目
+    var question = buildQuestionFromHand(
+      hand.tiles, hand.winTile || '', context, difficulty
+    );
+
+    if (question) return question;
+  }
+
+  return null;
+}
+
+/**
+ * 生成一轮随机算分题（带模板兜底）
+ */
+function buildRandomScorePracticeSet(count, opts) {
+  count = count || 10;
+  opts = opts || {};
+  var difficulty = opts.difficulty || 'basic';
+
+  var questions = [];
+  var fallbackCount = 0;
+
+  for (var i = 0; i < count; i++) {
+    var q = buildRandomScoreQuestion({
+      difficulty: difficulty,
+      maxAttempts: opts.maxAttempts || 80
+    });
+
+    if (q) {
+      questions.push(q);
+    } else {
+      // 兜底：从模板池取一道同难度题
+      fallbackCount++;
+      var fallback = sg.buildScorePracticeSet(1, { difficulty: difficulty });
+      if (fallback.length > 0) {
+        var fb = fallback[0];
+        fb.source = 'template-fallback';
+        questions.push(fb);
+      }
+    }
+  }
+
+  // 如果随机成功率低于50%，整轮回退模板题
+  if (fallbackCount > count / 2) {
+    return sg.buildScorePracticeSet(count, { difficulty: difficulty });
+  }
+
+  return questions;
+}
+
+module.exports = {
+  buildRandomScorePracticeSet: buildRandomScorePracticeSet,
+  buildRandomScoreQuestion: buildRandomScoreQuestion,
+  // 暴露配置便于测试
+  BASIC_YAKU_POOL: BASIC_YAKU_POOL,
+  ADVANCED_YAKU_POOL: ADVANCED_YAKU_POOL,
+  MIXED_YAKU_POOL: MIXED_YAKU_POOL
+};

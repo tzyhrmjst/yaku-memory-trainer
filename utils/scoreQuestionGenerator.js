@@ -2,6 +2,7 @@
 // 模板中的答案经过数据引擎 yakuChecker + fuCalculator + scoreCalculator 交叉验证
 
 var sc = require('./scoreCalculator');
+var dora = require('./dora');
 
 // 题目模板：仅包含手牌+条件+正确答案，选项由生成器自动推算
 var TEMPLATES = [
@@ -220,7 +221,7 @@ var TEMPLATES = [
   // 3番25符：立直+七对子（2番）+宝牌1 → 3200
   {
     id: 'tpl-adv-08', difficulty: 'advanced',
-    tiles: ['2m','2m','4m','4m','6m','6m','3p','3p','5p','5p','7s','7s','5z','5z'],
+    tiles: ['2m','2m','4m','4m','6m','6m','3p','3p','0p','5p','7s','7s','5z','5z'],
     winTile: '5z',
     context: { winMethod:'ron', isDealer:false, isMenzen:true, hasOpenMeld:false, roundWind:'1z', seatWind:'2z', riichi:true, doraCount:1 },
     answer: { han:4, fu:25, fuSubtotal:25, pointText:'6400', totalPoints:6400,
@@ -380,11 +381,18 @@ function buildScorePracticeSet(count, opts) {
   for (var i = 0; i < count; i++) {
     var tpl = pool[Math.floor(Math.random() * pool.length)];
     var answer = JSON.parse(JSON.stringify(tpl.answer));
+    var context = JSON.parse(JSON.stringify(tpl.context));
+    var doraIndicators = context.doraIndicators || dora.makeIndicatorsForCount(tpl.tiles, context.doraCount);
+    var doraCount = dora.countDora(tpl.tiles, doraIndicators, true);
+
+    context.doraIndicators = doraIndicators;
+    context.doraDisplays = dora.buildIndicatorDisplays(doraIndicators);
+    context.doraCount = doraCount;
 
     var options = {
       han: makeHanOptions(answer.han, answer.limit ? answer.limit.name : null),
       fu: makeFuOptions(answer.fu),
-      points: makePointOptions(answer, tpl.context)
+      points: makePointOptions(answer, context)
     };
 
     questions.push({
@@ -392,7 +400,7 @@ function buildScorePracticeSet(count, opts) {
       difficulty: tpl.difficulty,
       tiles: tpl.tiles.slice(),
       winTile: tpl.winTile,
-      context: JSON.parse(JSON.stringify(tpl.context)),
+      context: context,
       answer: answer,
       options: options
     });

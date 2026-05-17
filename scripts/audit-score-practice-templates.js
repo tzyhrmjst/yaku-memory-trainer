@@ -178,7 +178,7 @@ var TEMPLATES = [
   },
   {
     id: 'tpl-adv-08', difficulty: 'advanced',
-    tiles: ['2m','2m','4m','4m','6m','6m','3p','3p','5p','5p','7s','7s','5z','5z'],
+    tiles: ['2m','2m','4m','4m','6m','6m','3p','3p','0p','5p','7s','7s','5z','5z'],
     winTile: '5z',
     context: { winMethod:'ron', isDealer:false, isMenzen:true, hasOpenMeld:false, roundWind:'1z', seatWind:'2z', riichi:true, doraCount:1 },
     answer: { han:4, fu:25, fuSubtotal:25, pointText:'6400', totalPoints:6400,

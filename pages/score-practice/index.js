@@ -1,8 +1,11 @@
 var mt = require('../../utils/mahjongTiles');
 var sg = require('../../utils/scoreQuestionGenerator');
+var srg = require('../../utils/scoreRandomQuestionGenerator');
 var sc = require('../../utils/scoreCalculator');
 var yc = require('../../utils/yakuChecker');
 var fc = require('../../utils/fuCalculator');
+
+var USE_RANDOM_SCORE_QUESTIONS = true;
 
 var YAKU_FRIENDLY = {
   tanyao: '断幺九', pinfu: '平和', yakuhai: '役牌', chiitoitsu: '七对子',
@@ -109,7 +112,12 @@ Page({
     this.setData({ loading: true, completed: false, currentIndex: 0, correctCount: 0 });
 
     setTimeout(function () {
-      var questions = sg.buildScorePracticeSet(10, { difficulty: diff });
+      var questions;
+      if (USE_RANDOM_SCORE_QUESTIONS) {
+        questions = srg.buildRandomScorePracticeSet(10, { difficulty: diff });
+      } else {
+        questions = sg.buildScorePracticeSet(10, { difficulty: diff });
+      }
       self.setData({ loading: false, questions: questions });
       self.loadCurrentQuestion();
     }, 100);

@@ -48,10 +48,15 @@
         <text class="strip-item">{{currentQuestion.context.isDealer ? '庄家' : '子家'}}</text>
         <text class="strip-sep">·</text>
         <text class="strip-item">{{currentQuestion.context.riichi ? '立直' : '未立直'}}</text>
-        <block wx:if="{{currentQuestion.context.doraCount > 0}}">
-          <text class="strip-sep">·</text>
-          <text class="strip-item">宝牌{{currentQuestion.context.doraCount}}</text>
-        </block>
+      </view>
+
+      <view class="dora-strip" wx:if="{{currentQuestion.context.doraDisplays.length > 0}}">
+        <text class="dora-strip-label">宝牌指示牌</text>
+        <view class="dora-indicators">
+          <view class="dora-indicator" wx:for="{{currentQuestion.context.doraDisplays}}" wx:key="index">
+            <image class="dora-indicator-img" src="{{item.src}}" mode="aspectFit" />
+          </view>
+        </view>
       </view>
 
       <!-- 答题 -->
