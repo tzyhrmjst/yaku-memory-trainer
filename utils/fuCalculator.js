@@ -27,9 +27,13 @@ function isDoubleWind(tile, context) {
  * @param {Object} context
  * @param {string} context.winMethod - 'ron' | 'tsumo'
  * @param {string} context.winTile - 和牌牌
- * @param {boolean} context.hasOpenMeld - 是否有副露
+ * @param {boolean} context.hasOpenMeld - 是否有副露（无 meldOpenFlags 时的全局标记）
  * @param {string} context.roundWind - 场风
  * @param {string} context.seatWind - 自风
+ * @param {string} [context.waitType] - 听牌形 'tanki'|'shanpon'|'ryanmen'|'kanchan'|'penchan'（可选，覆盖自动检测）
+ * @param {boolean[]} [context.meldOpenFlags] - 每个面子的明/暗标记，与分区 melds 顺序对应（可选）
+ * @param {Object[]} [context.explicitMelds] - 结构化面子数组（可选，直接指定面子及其明暗）
+ * @param {string} [context.explicitPair] - explicitMelds 对应的雀头牌（可选）
  * @returns {{ fu: number, fuSubtotal: number, fuDetails: Array }}
  */
 function calculateFu(tiles, context) {
@@ -51,6 +55,18 @@ function calculateFu(tiles, context) {
       fu: 25, fuSubtotal: 25,
       fuDetails: [{ name: '七对子固定符', fu: 25 }]
     };
+  }
+
+  // 若提供了显式面子，直接使用而不再做分区分析
+  if (context.explicitMelds && context.explicitMelds.length === 4) {
+    var partition = {
+      melds: context.explicitMelds.map(function(m) {
+        if (m.type === 'sequence') return { type: 'sequence', suit: m.suit, startNum: m.startNum };
+        return { type: m.type || 'triplet', tile: m.tile };
+      }),
+      pair: { type: 'pair', tile: context.explicitPair || '' }
+    };
+    return calculateFuForPartition(partition, context);
   }
 
   // 标准形 — 找所有合法拆分，用高点法选符数最高的
@@ -83,14 +99,21 @@ function calculateFuForPartition(partition, context) {
   var winMethod = context.winMethod || 'ron';
   var winTile = context.winTile || '';
   var hasOpenMeld = context.hasOpenMeld || false;
-  var isMenzen = !hasOpenMeld;
+  var meldOpenFlags = context.meldOpenFlags || null;
+  var explicitMelds = context.explicitMelds || null;
 
   var melds = partition.melds;
   var pair = partition.pair;
+  var isMenzen = (!hasOpenMeld && !meldOpenFlags && !explicitMelds) ||
+                 (meldOpenFlags && meldOpenFlags.every(function(f) { return !f; })) ||
+                 (explicitMelds && explicitMelds.every(function(m) { return !m.open; }));
 
   var details = [];
   var subtotal = 20; // 副底
   details.push({ name: '副底', fu: 20 });
+
+  // 确定听牌形
+  var waitType = context.waitType || getWaitType(melds, pair, winTile);
 
   // 门清/副露荣和/自摸
   if (winMethod === 'ron') {
@@ -107,7 +130,6 @@ function calculateFuForPartition(partition, context) {
     var isPinfuShape = sequenceCount === 4 && !isYakuhaiPair(pair.tile, context) && isRyanmenWaitWin(melds, winTile);
 
     if (isPinfuShape && isMenzen) {
-      // 平和自摸 → 固定20符（但仍需比较其他拆分，调用方会选最高符数）
       return {
         fu: 20, fuSubtotal: 20,
         fuDetails: [{ name: '副底（平和自摸固定20符）', fu: 20 }]
@@ -118,7 +140,7 @@ function calculateFuForPartition(partition, context) {
     details.push({ name: '自摸', fu: 2 });
   }
 
-  // 面子符
+  // 面子符 — 按 meldOpenFlags / explicitMelds / hasOpenMeld 决定明暗
   for (var i = 0; i < melds.length; i++) {
     var m = melds[i];
     if (m.type === 'sequence') continue;
@@ -127,15 +149,37 @@ function calculateFuForPartition(partition, context) {
     var isYao = isTerminalOrHonor(t);
     var fuValue;
 
+    // 确定该面子的明暗状态
+    var meldIsOpen = hasOpenMeld;
+    if (explicitMelds && i < explicitMelds.length && explicitMelds[i].open !== undefined) {
+      meldIsOpen = explicitMelds[i].open;
+    } else if (meldOpenFlags && i < meldOpenFlags.length) {
+      meldIsOpen = meldOpenFlags[i];
+    }
+    // 双碰荣和：荣和张完成的那组刻子按明刻处理
+    if (winMethod === 'ron' && waitType === 'shanpon' && m.type === 'triplet' && m.tile === winTile) {
+      meldIsOpen = true;
+    }
+
     if (m.type === 'kan') {
-      fuValue = hasOpenMeld ? (isYao ? 16 : 8) : (isYao ? 32 : 16);
+      fuValue = meldIsOpen ? (isYao ? 16 : 8) : (isYao ? 32 : 16);
     } else {
-      fuValue = hasOpenMeld ? (isYao ? 4 : 2) : (isYao ? 8 : 4);
+      fuValue = meldIsOpen ? (isYao ? 4 : 2) : (isYao ? 8 : 4);
     }
 
     var typeLabel = isYao ? '幺九' : '中张';
+    var detailName;
+    if (m.type === 'kan') {
+      detailName = typeLabel + (meldIsOpen ? '明杠' : '暗杠');
+    } else {
+      detailName = typeLabel + (meldIsOpen ? '明刻' : '暗刻');
+    }
+    // 双碰荣和时标注该刻子因荣和按明刻
+    if (winMethod === 'ron' && waitType === 'shanpon' && m.type === 'triplet' && m.tile === winTile) {
+      detailName += '（双碰荣和按明刻）';
+    }
     subtotal += fuValue;
-    details.push({ name: typeLabel + (m.type === 'kan' ? (hasOpenMeld ? '明杠' : '暗杠') : (hasOpenMeld ? '明刻' : '暗刻')), fu: fuValue });
+    details.push({ name: detailName, fu: fuValue });
   }
 
   // 雀头符
@@ -149,7 +193,6 @@ function calculateFuForPartition(partition, context) {
 
   // 听牌形符
   if (winMethod === 'ron' && winTile) {
-    var waitType = getWaitType(melds, pair, winTile);
     if (waitType === 'kanchan' || waitType === 'penchan' || waitType === 'tanki') {
       subtotal += 2;
       var waitName = waitType === 'kanchan' ? '坎张待' : waitType === 'penchan' ? '边张待' : '单骑待';
@@ -194,13 +237,21 @@ function getWaitType(melds, pair, winTile) {
   // 単骑: 和了牌就是雀头
   if (winTile === pair.tile) return 'tanki';
 
+  // 双碰: 和了牌属于某个刻子（非雀头）
   for (var i = 0; i < melds.length; i++) {
     var m = melds[i];
-    if (m.type !== 'sequence' || m.suit !== winSuit) continue;
+    if ((m.type === 'triplet' || m.type === 'kan') && m.tile === winTile) {
+      return 'shanpon';
+    }
+  }
 
-    if (winNum === m.startNum + 1) return 'kanchan';
-    if (winNum === m.startNum && m.startNum === 1) return 'penchan';
-    if (winNum === m.startNum + 2 && m.startNum === 7) return 'penchan';
+  for (var i = 0; i < melds.length; i++) {
+    var m2 = melds[i];
+    if (m2.type !== 'sequence' || m2.suit !== winSuit) continue;
+
+    if (winNum === m2.startNum + 1) return 'kanchan';
+    if (winNum === m2.startNum && m2.startNum === 1) return 'penchan';
+    if (winNum === m2.startNum + 2 && m2.startNum === 7) return 'penchan';
   }
 
   return 'ryanmen';

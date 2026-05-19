@@ -80,6 +80,7 @@
               class="answer-option {{selectedFu === item ? 'answer-option-active' : ''}} {{answered && selectedFu !== item && currentQuestion.answer.fu === item ? 'answer-option-correct' : ''}} {{answered && selectedFu === item && selectedFu !== currentQuestion.answer.fu ? 'answer-option-wrong' : ''}}"
               data-value="{{item}}" bindtap="onSelectFu">{{item}}符</view>
           </view>
+          <view class="fu-limit-note" wx:if="{{currentQuestion.answer.limit}}">已{{currentQuestion.answer.limit.name}}封顶，符数不影响点数，仅用于符数拆解练习</view>
         </view>
         <view class="answer-group">
           <view class="group-label">点数</view>

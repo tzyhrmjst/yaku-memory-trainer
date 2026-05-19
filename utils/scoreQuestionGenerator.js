@@ -272,6 +272,22 @@ var TEMPLATES = [
       yaku:[{id:'kokushi_musou',name:'国士无双',han:13}],
       fuDetails:[],
       explanation:'役满，子家荣和32000。国士无双，役满不计符数。' }
+  },
+  // 小三元 + 对对和：白刻+发刻+中雀头+两个中张刻子 → 6番40符跳满
+  {
+    id: 'tpl-adv-shousangen-toitoi', difficulty: 'advanced',
+    tiles: ['5z','5z','5z','6z','6z','6z','7z','7z','2m','2m','2m','3p','3p','3p'],
+    winTile: '7z',
+    context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
+    answer: { han:6, fu:40, fuSubtotal:36, limit:{name:'跳满',basePoints:3000}, pointText:'12000', totalPoints:12000,
+      yaku:[
+        {id:'yakuhai',name:'役牌·白',han:1},
+        {id:'yakuhai',name:'役牌·发',han:1},
+        {id:'toitoiho',name:'对对和',han:2},
+        {id:'shousangen',name:'小三元',han:2}
+      ],
+      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
+      explanation:'6番40符，子家荣和12000。对对和2番+小三元2番+役牌白1番+役牌发1番。小三元不吞两组役牌，白刻和发刻各计1番。' }
   }
 ];
 
@@ -344,8 +360,32 @@ function makePointOptions(answer, context) {
     seen[o] = true;
     return true;
   });
+  // 尝试更多候选避免重复（han±2, 更多符数）
+  if (options.length < 4) {
+    var extraFus = [60, 70, 80, 25, 30, 40, 50].filter(function(f) { return f !== baseFu; });
+    extraFus.forEach(function(f) {
+      if (options.length >= 4) return;
+      try {
+        var er = sc.calculatePoints({ han: baseHan, fu: f, winMethod: context.winMethod, isDealer: context.isDealer });
+        if (options.indexOf(er.pointText) === -1) options.push(er.pointText);
+      } catch(e) {}
+    });
+    [baseHan - 2, baseHan + 2].forEach(function(h) {
+      if (h <= 0 || options.length >= 4) return;
+      try {
+        var er2 = sc.calculatePoints({ han: h, fu: baseFu, winMethod: context.winMethod, isDealer: context.isDealer });
+        if (options.indexOf(er2.pointText) === -1) options.push(er2.pointText);
+      } catch(e) {}
+    });
+  }
+  // 仍不足时降级为更少但不重复的选项
   while (options.length < 4) {
-    options.push(correct);
+    var fallback = '—';
+    if (options.indexOf(fallback) === -1) {
+      options.push(fallback);
+    } else {
+      break;
+    }
   }
   shuffle(options);
   return options;

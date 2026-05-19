@@ -225,6 +225,22 @@ var TEMPLATES = [
       yaku:[{id:'kokushi_musou',name:'国士无双',han:13}],
       fuDetails:[],
       explanation:'役满，子家荣和32000。国士无双，役满不计符数。' }
+  },
+  // 小三元 + 对对和：白刻+发刻+中雀头+两个中张刻子 → 6番40符跳满
+  {
+    id: 'tpl-adv-shousangen-toitoi', difficulty: 'advanced',
+    tiles: ['5z','5z','5z','6z','6z','6z','7z','7z','2m','2m','2m','3p','3p','3p'],
+    winTile: '7z',
+    context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
+    answer: { han:6, fu:40, fuSubtotal:36, limit:{name:'跳满',basePoints:3000}, pointText:'12000', totalPoints:12000,
+      yaku:[
+        {id:'yakuhai',name:'役牌·白',han:1},
+        {id:'yakuhai',name:'役牌·发',han:1},
+        {id:'toitoiho',name:'对对和',han:2},
+        {id:'shousangen',name:'小三元',han:2}
+      ],
+      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
+      explanation:'6番40符，子家荣和12000。对对和2番+小三元2番+役牌白1番+役牌发1番。小三元不吞两组役牌，白刻和发刻各计1番。' }
   }
 ];
 
@@ -331,6 +347,20 @@ function hasYakumanYaku(yakuList) {
   });
 }
 
+// 统计三元牌刻子和雀头数量；5z=白 6z=发 7z=中
+function countDragonSets(tiles) {
+  var counts = {};
+  tiles.forEach(function(t) { counts[t] = (counts[t] || 0) + 1; });
+  var triplets = 0;
+  var pair = 0;
+  ['5z', '6z', '7z'].forEach(function(d) {
+    var c = counts[d] || 0;
+    if (c >= 3) triplets++;
+    else if (c === 2) pair++;
+  });
+  return { triplets: triplets, pair: pair };
+}
+
 TEMPLATES.forEach(function(tpl) {
   var yakuIds = tpl.answer.yaku.map(function(y) { return y.id; });
 
@@ -373,16 +403,113 @@ TEMPLATES.forEach(function(tpl) {
       issueCountD++;
     }
   }
+
+  // 7. 两组三元牌刻子 + 一组三元牌雀头 => 必须包含 shousangen
+  var dragonCounts = countDragonSets(tpl.tiles);
+  if (dragonCounts.triplets === 2 && dragonCounts.pair === 1 && yakuIds.indexOf('shousangen') === -1) {
+    console.log('[MISSING_SHOUSANGEN] ' + tpl.id + ': 2 dragon triplets + 1 dragon pair, shousangen not listed');
+    issueCountD++;
+  }
+
+  // 8. N 组三元牌刻子 => 普通役牌番数至少 N 番（役满覆盖除外）
+  if (dragonCounts.triplets >= 1 && !hasYakumanYaku(tpl.answer.yaku)) {
+    var yakuhaiEntries = tpl.answer.yaku.filter(function(y) { return y.id === 'yakuhai'; });
+    var yakuhaiHanSum = yakuhaiEntries.reduce(function(s, y) { return s + y.han; }, 0);
+    if (yakuhaiHanSum < dragonCounts.triplets) {
+      console.log('[YAKUHAI_HAN_SHORT] ' + tpl.id + ': ' + dragonCounts.triplets + ' dragon triplets but yakuhai han sum=' + yakuhaiHanSum);
+      issueCountD++;
+    }
+  }
+
+  // 9. 含 shousangen 时番数合计不应低于 4 番
+  if (yakuIds.indexOf('shousangen') !== -1 && tpl.answer.han < 4) {
+    console.log('[SHOUSANGEN_LOW_HAN] ' + tpl.id + ': has shousangen but total han=' + tpl.answer.han + ' (<4)');
+    issueCountD++;
+  }
 });
 if (issueCountD === 0) console.log('  OK — 无漏役告警');
 
+// ===== 校验 E：选项去重 =====
+console.log('\n=== 校验 E：点数选项去重 ===');
+var issueCountE = 0;
+
+TEMPLATES.forEach(function(tpl) {
+  var ctx = tpl.context;
+  // 模拟 makePointOptions 的去重逻辑
+  var correct = tpl.answer.pointText;
+  var baseFu = tpl.answer.fu;
+  var baseHan = tpl.answer.han;
+
+  var candidates = [];
+  [20, 25, 30, 40, 50].filter(function(f) { return f !== baseFu; })
+    .forEach(function(f) {
+      try {
+        var r = sc.calculatePoints({ han: baseHan, fu: f, winMethod: ctx.winMethod, isDealer: ctx.isDealer });
+        if (r.pointText !== correct && candidates.indexOf(r.pointText) === -1) {
+          candidates.push(r.pointText);
+        }
+      } catch(e) {}
+    });
+
+  [baseHan - 1, baseHan + 1].forEach(function(h) {
+    if (h <= 0) return;
+    try {
+      var r = sc.calculatePoints({ han: h, fu: baseFu, winMethod: ctx.winMethod, isDealer: ctx.isDealer });
+      if (r.pointText !== correct && candidates.indexOf(r.pointText) === -1) {
+        candidates.push(r.pointText);
+      }
+    } catch(e) {}
+  });
+
+  var distractors = candidates.slice(0, 3);
+  var options = [correct].concat(distractors);
+  var seen = {};
+  options = options.filter(function(o) {
+    if (seen[o]) return false;
+    seen[o] = true;
+    return true;
+  });
+
+  // 检查兜底是否会填重复项
+  if (options.length < 4) {
+    var extraFus = [60, 70, 80].filter(function(f) { return f !== baseFu; });
+    extraFus.forEach(function(f) {
+      if (options.length >= 4) return;
+      try {
+        var er = sc.calculatePoints({ han: baseHan, fu: f, winMethod: ctx.winMethod, isDealer: ctx.isDealer });
+        if (options.indexOf(er.pointText) === -1) options.push(er.pointText);
+      } catch(e) {}
+    });
+  }
+
+  if (options.length < 4) {
+    // 部分极端情况（役满等）可生成的唯一点数确实不足4个，运行时已通过降级处理
+    console.log('[OPTION_FEW] ' + tpl.id + ': only ' + options.length + ' unique point options (runtime will degrade gracefully)');
+  }
+
+  var deduped = [];
+  var dedupSeen = {};
+  options.forEach(function(o) {
+    if (!dedupSeen[o]) {
+      dedupSeen[o] = true;
+      deduped.push(o);
+    }
+  });
+  if (deduped.length !== options.length) {
+    console.log('[OPTION_DUPLICATE] ' + tpl.id + ': options contain duplicates');
+    issueCountE++;
+  }
+});
+if (issueCountE === 0) console.log('  OK — 选项无重复');
+
 // ===== 汇总 =====
-var totalIssues = issueCountA + issueCountB + issueCountC + issueCountD;
+var totalIssues = issueCountA + issueCountB + issueCountC + issueCountD + issueCountE;
 console.log('\n===== 审计结果 =====');
 console.log('校验 A (番数一致性): ' + issueCountA + ' 问题');
 console.log('校验 B (总番数一致性): ' + issueCountB + ' 问题');
 console.log('校验 C (点数一致性): ' + issueCountC + ' 问题');
 console.log('校验 D (漏役扫描): ' + issueCountD + ' 问题');
+console.log('校验 E (选项去重): ' + issueCountE + ' 问题');
 console.log('总问题数: ' + totalIssues);
 
 if (totalIssues > 0) process.exit(1);

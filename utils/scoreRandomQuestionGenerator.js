@@ -207,7 +207,39 @@ function makePointOptions(answer, context) {
     seen[o] = true;
     return true;
   });
-  while (options.length < 4) options.push(correct);
+  // 尝试更多候选避免重复
+  if (options.length < 4) {
+    [60, 70, 80, 25, 30, 40, 50].filter(function(f) { return f !== answer.fu && f > 0; })
+      .forEach(function (f) {
+        if (options.length >= 4) return;
+        try {
+          var er = sc.calculatePoints({
+            han: answer.han, fu: f,
+            winMethod: context.winMethod, isDealer: context.isDealer
+          });
+          if (options.indexOf(er.pointText) === -1) options.push(er.pointText);
+        } catch (e) {}
+      });
+    [answer.han - 2, answer.han + 2].forEach(function (h) {
+      if (h <= 0 || options.length >= 4) return;
+      try {
+        var er2 = sc.calculatePoints({
+          han: h, fu: answer.fu,
+          winMethod: context.winMethod, isDealer: context.isDealer
+        });
+        if (options.indexOf(er2.pointText) === -1) options.push(er2.pointText);
+      } catch (e) {}
+    });
+  }
+  // 仍不足时降级，不推重复按钮
+  while (options.length < 4) {
+    var fallback = '—';
+    if (options.indexOf(fallback) === -1) {
+      options.push(fallback);
+    } else {
+      break;
+    }
+  }
   return shuffle(options);
 }
 

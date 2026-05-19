@@ -86,6 +86,8 @@ function buildAnswer(tiles, context) {
   var yakuList = [];
   var baseYakuHan = 0;
   var isYakuman = false;
+  var yakuhaiNames = getYakuhaiSpecificNames(normalizedTiles, { roundWind: roundWind, seatWind: seatWind });
+  var yakuhaiIdx = 0;
 
   yakuIds.forEach(function (id) {
     var han;
@@ -96,7 +98,15 @@ function buildAnswer(tiles, context) {
     }
     if (!han) return;
 
-    yakuList.push({ id: id, name: getYakuName(id), han: han });
+    var name;
+    if (id === 'yakuhai') {
+      name = yakuhaiNames[yakuhaiIdx] || getYakuName(id);
+      yakuhaiIdx++;
+    } else {
+      name = getYakuName(id);
+    }
+
+    yakuList.push({ id: id, name: name, han: han });
     baseYakuHan += han;
 
     if (han >= 13) isYakuman = true;
@@ -181,6 +191,25 @@ function getYakuName(id) {
     kokushi_musou_13men: '国士无双十三面听', junsei_chuuren_poutou: '纯正九莲宝灯'
   };
   return nameMap[id] || id;
+}
+
+// 根据牌面生成具体的役牌名称（役牌·白、役牌·发、役牌·东 等）
+function getYakuhaiSpecificNames(tiles, context) {
+  var counts = {};
+  tiles.forEach(function(t) { counts[t] = (counts[t] || 0) + 1; });
+  var names = [];
+  var dragonNames = { '5z': '役牌·白', '6z': '役牌·发', '7z': '役牌·中' };
+  var windNames = { '1z': '役牌·东', '2z': '役牌·南', '3z': '役牌·西', '4z': '役牌·北' };
+
+  ['5z', '6z', '7z'].forEach(function(t) {
+    if ((counts[t] || 0) >= 3) names.push(dragonNames[t]);
+  });
+  ['1z', '2z', '3z', '4z'].forEach(function(t) {
+    if ((counts[t] || 0) >= 3 && (t === context.roundWind || t === context.seatWind)) {
+      names.push(windNames[t]);
+    }
+  });
+  return names;
 }
 
 function buildExplanation(yakuList, fuResult, pointResult, isDealer, winMethod) {

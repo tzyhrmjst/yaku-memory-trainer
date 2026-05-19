@@ -433,9 +433,10 @@ function checkHonorYaku(partition, context) {
   if (WIND_SET.has(pair.tile)) windPair = pair.tile;
 
   const valueWindTriplets = windTriplets.filter(t => isValueWind(t, context));
+  const valueCount = dragonTriplets.length + valueWindTriplets.length;
 
-  // 役牌: 三元牌、场风牌或自风牌的刻子
-  if (dragonTriplets.length > 0 || valueWindTriplets.length > 0) {
+  // 役牌: 每组三元牌或场风/自风刻子各计1番
+  for (let i = 0; i < valueCount; i++) {
     ids.push('yakuhai');
   }
 
@@ -452,13 +453,11 @@ function checkHonorYaku(partition, context) {
   // 小四喜: 3种风牌刻子 + 1种风牌雀头
   if (windTriplets.length === 3 && windPair) {
     ids.push('shousuushii');
-    if (valueWindTriplets.length > 0) ids.push('yakuhai');
   }
 
   // 大四喜: 4种风牌刻子
   if (windTriplets.length === 4) {
     ids.push('daisuushii');
-    if (valueWindTriplets.length > 0) ids.push('yakuhai');
   }
 
   return ids;
@@ -607,7 +606,7 @@ function checkContextYaku(context) {
  * 判定一手牌成立的全部役种
  * @param {string[]} tiles - 14张牌
  * @param {Object} options - { winTile, contextHint }
- * @returns {string[]} 成立的役种ID列表
+ * @returns {string[]} 成立的役种ID列表，yakuhai 按三元牌/场风自风刻子组数可重复出现
  */
 function checkAllYaku(tiles, options) {
   const opts = options || {};
@@ -642,22 +641,30 @@ function checkAllYaku(tiles, options) {
   // Layer 3+4: Partitions + structure/honor
   const partitions = findAllPartitions(counts);
 
+  let yakuhaiCount = 0;
+
   if (partitions.length > 0) {
-    // 收集所有分区中出现的役种
+    // 收集所有分区中出现的役种（yakuhai 可重复，单独计数）
     const structureIds = new Set();
-    const honorIds = new Set();
+    const honorOtherIds = new Set();
 
     for (const p of partitions) {
       for (const id of checkStructureYaku(p, context, winTile)) {
         structureIds.add(id);
       }
+      let partitionYakuhai = 0;
       for (const id of checkHonorYaku(p, context)) {
-        honorIds.add(id);
+        if (id === 'yakuhai') {
+          partitionYakuhai++;
+        } else {
+          honorOtherIds.add(id);
+        }
       }
+      if (partitionYakuhai > yakuhaiCount) yakuhaiCount = partitionYakuhai;
     }
 
     for (const id of structureIds) results.add(id);
-    for (const id of honorIds) results.add(id);
+    for (const id of honorOtherIds) results.add(id);
 
     // 混老头必然复合对对和或七对子
     if (results.has('honroutou')) {
@@ -724,8 +731,21 @@ function checkAllYaku(tiles, options) {
     }
   }
 
-  // 排序：按番数从低到高
+  // 排序：按番数从低到高，yakuhai 按实际组数插入
   const sorted = sortByHan([...results]);
+  if (yakuhaiCount > 0) {
+    const yakuhaiHan = YAKU_HAN['yakuhai'] || 1;
+    let insertIdx = 0;
+    for (let i = 0; i < sorted.length; i++) {
+      if ((YAKU_HAN[sorted[i]] || 0) <= yakuhaiHan) {
+        insertIdx = i + 1;
+      }
+    }
+    for (let i = 0; i < yakuhaiCount; i++) {
+      sorted.splice(insertIdx, 0, 'yakuhai');
+      insertIdx++;
+    }
+  }
   return sorted;
 }
 

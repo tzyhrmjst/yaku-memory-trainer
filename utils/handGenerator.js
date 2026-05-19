@@ -196,10 +196,13 @@ function buildHand(groups, pair) {
   return tiles;
 }
 
-function pickWinTile(groups, pair) {
+function pickWinTile(groups, pair, forcePair) {
   // 随机选最后完成的一组面子或雀头中的一张作为和了牌
   var candidates;
-  if (Math.random() < 0.4 && pair.length > 0) {
+  if (forcePair) {
+    // 四杠子等特殊役种：只能荣和/自摸雀头
+    candidates = pair;
+  } else if (Math.random() < 0.4 && pair.length > 0) {
     candidates = pair;
   } else if (groups.length > 0) {
     var g = groups[Math.floor(Math.random() * groups.length)];
@@ -1227,7 +1230,9 @@ function generateKanHand(numKans) {
     }
     if (quadKinds !== numKans) continue;
 
-    return { tiles: tiles, winTile: pickWinTile(groups, pair), groups: groups, pair: pair };
+    // 四杠子必须荣和/自摸雀头，不能从杠子里补牌
+    var forcePairWin = numKans >= 4;
+    return { tiles: tiles, winTile: pickWinTile(groups, pair, forcePairWin), groups: groups, pair: pair };
   }
   return null;
 }
