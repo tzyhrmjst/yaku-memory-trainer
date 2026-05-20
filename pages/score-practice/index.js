@@ -332,6 +332,9 @@ Page({
     contextHint.push(this.data.freeHasOpenMeld ? '已副露' : '门前清');
     contextHint.push(this.data.freeWinMethod === 'tsumo' ? '自摸' : '荣和');
     if (this.data.freeRiichi) contextHint.push('已宣言立直');
+    // 自由练习默认东场南家
+    contextHint.push('场风东');
+    contextHint.push('自风南');
 
     // 枚举每张牌作为和牌张，找最优结果
     var seenTiles = {};

@@ -391,6 +391,11 @@ function makePointOptions(answer, context) {
   return options;
 }
 
+function windName(code) {
+  var map = { '1z': '东', '2z': '南', '3z': '西', '4z': '北' };
+  return map[code] || '';
+}
+
 function shuffle(arr) {
   for (var i = arr.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
@@ -425,6 +430,8 @@ function buildScorePracticeSet(count, opts) {
     var doraIndicators = context.doraIndicators || dora.makeIndicatorsForCount(tpl.tiles, context.doraCount);
     var doraCount = dora.countDora(tpl.tiles, doraIndicators, true);
 
+    context.roundWindText = windName(context.roundWind) + '场';
+    context.seatWindText = windName(context.seatWind) + '家';
     context.doraIndicators = doraIndicators;
     context.doraDisplays = dora.buildIndicatorDisplays(doraIndicators);
     context.doraCount = doraCount;

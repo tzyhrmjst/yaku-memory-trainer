@@ -34,6 +34,13 @@ var YAKU_NAME_JA = {
   kokushi_musou_13men: '国士無双十三面待ち', junsei_chuuren_poutou: '純正九蓮宝灯'
 };
 
+var WIND_LABEL = {
+  '1z': '东',
+  '2z': '南',
+  '3z': '西',
+  '4z': '北'
+};
+
 /**
  * 构建 contextHint 字符串供 yakuChecker 解析
  */
@@ -44,6 +51,8 @@ function buildContextHint(context) {
   else if (context.isMenzen) parts.push('未立直');
   if (context.winMethod === 'tsumo') parts.push('自摸和牌');
   else parts.push('荣和');
+  if (context.roundWind) parts.push('场风' + WIND_LABEL[context.roundWind]);
+  if (context.seatWind) parts.push('自风' + WIND_LABEL[context.seatWind]);
   return parts.join('，');
 }
 
@@ -205,8 +214,9 @@ function getYakuhaiSpecificNames(tiles, context) {
     if ((counts[t] || 0) >= 3) names.push(dragonNames[t]);
   });
   ['1z', '2z', '3z', '4z'].forEach(function(t) {
-    if ((counts[t] || 0) >= 3 && (t === context.roundWind || t === context.seatWind)) {
-      names.push(windNames[t]);
+    if ((counts[t] || 0) >= 3) {
+      if (t === context.roundWind) names.push(windNames[t] + '（场风）');
+      if (t === context.seatWind) names.push(windNames[t] + '（自风）');
     }
   });
   return names;

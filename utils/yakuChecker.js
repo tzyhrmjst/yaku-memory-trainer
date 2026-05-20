@@ -432,10 +432,12 @@ function checkHonorYaku(partition, context) {
   if (DRAGON_SET.has(pair.tile)) dragonPair = pair.tile;
   if (WIND_SET.has(pair.tile)) windPair = pair.tile;
 
-  const valueWindTriplets = windTriplets.filter(t => isValueWind(t, context));
-  const valueCount = dragonTriplets.length + valueWindTriplets.length;
+  // 役牌: 三元牌每刻1番，风牌每刻按场风/自风分别计番（连风计2番）
+  var valueCount = dragonTriplets.length;
+  windTriplets.forEach(function(t) {
+    valueCount += valueWindHanCount(t, context);
+  });
 
-  // 役牌: 每组三元牌或场风/自风刻子各计1番
   for (let i = 0; i < valueCount; i++) {
     ids.push('yakuhai');
   }
@@ -517,6 +519,14 @@ function isTerminalOrHonor(t) {
 function isValueWind(tile, context) {
   if (!WIND_SET.has(tile)) return false;
   return context.roundWind === tile || context.seatWind === tile;
+}
+
+function valueWindHanCount(tile, context) {
+  if (!WIND_SET.has(tile)) return 0;
+  var n = 0;
+  if (context.roundWind === tile) n++;
+  if (context.seatWind === tile) n++;
+  return n;
 }
 
 function isYakuhaiPair(tile, context) {

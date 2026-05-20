@@ -56,6 +56,11 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function windName(code) {
+  var map = { '1z': '东', '2z': '南', '3z': '西', '4z': '北' };
+  return map[code] || '';
+}
+
 function shuffle(arr) {
   var result = arr.slice();
   for (var i = result.length - 1; i > 0; i--) {
@@ -94,12 +99,14 @@ function randomContext(difficulty) {
     riichi = true;
   }
 
-  // 自风: 入门优先非场风，进阶随机
+  // 自风: 庄家必须是东，子家不能是东
   var seatWind;
-  if (difficulty === 'basic') {
-    seatWind = randomFloat() < 0.7 ? '2z' : '1z';
+  if (isDealer) {
+    seatWind = '1z';
+  } else if (difficulty === 'basic') {
+    seatWind = '2z';
   } else {
-    seatWind = ['1z', '2z', '3z', '4z'][randomInt(0, 3)];
+    seatWind = ['2z', '3z', '4z'][randomInt(0, 2)];
   }
 
   return {
@@ -319,6 +326,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
       hasOpenMeld: context.hasOpenMeld,
       roundWind: context.roundWind,
       seatWind: context.seatWind,
+      roundWindText: windName(context.roundWind) + '场',
+      seatWindText: windName(context.seatWind) + '家',
       riichi: context.riichi,
       doraCount: answer.doraCount,
       doraIndicators: doraIndicators,

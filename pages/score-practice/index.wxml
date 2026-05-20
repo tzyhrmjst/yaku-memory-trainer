@@ -45,6 +45,10 @@
       </view>
 
       <view class="context-strip">
+        <text class="strip-item">{{currentQuestion.context.roundWindText}}</text>
+        <text class="strip-sep">·</text>
+        <text class="strip-item">{{currentQuestion.context.seatWindText}}</text>
+        <text class="strip-sep">·</text>
         <text class="strip-item">{{currentQuestion.context.isMenzen ? '门前清' : '副露'}}</text>
         <text class="strip-sep">·</text>
         <text class="strip-item">{{currentQuestion.context.winMethod === 'tsumo' ? '自摸' : '荣和'}}</text>

@@ -10,6 +10,16 @@ function isTerminalOrHonor(t) { return isHonor(t) || isTerminal(t); }
 
 var DRAGON_SET = { '5z': true, '6z': true, '7z': true };
 var WIND_SET = { '1z': true, '2z': true, '3z': true, '4z': true };
+var WIND_NAME = { '1z': '东', '2z': '南', '3z': '西', '4z': '北' };
+var DRAGON_NAME = { '5z': '白', '6z': '发', '7z': '中' };
+
+function pairName(tile, context) {
+  if (DRAGON_SET[tile]) return '役牌雀头（' + DRAGON_NAME[tile] + '）';
+  if (WIND_SET[tile] && context.roundWind === tile && context.seatWind === tile) return '连风雀头（' + WIND_NAME[tile] + '）';
+  if (WIND_SET[tile] && context.roundWind === tile) return '役牌雀头（场风' + WIND_NAME[tile] + '）';
+  if (WIND_SET[tile] && context.seatWind === tile) return '役牌雀头（自风' + WIND_NAME[tile] + '）';
+  return null;
+}
 
 function isYakuhaiPair(tile, context) {
   if (DRAGON_SET[tile]) return true;
@@ -185,10 +195,10 @@ function calculateFuForPartition(partition, context) {
   // 雀头符
   if (isDoubleWind(pair.tile, context)) {
     subtotal += 4;
-    details.push({ name: '连风雀头', fu: 4 });
+    details.push({ name: pairName(pair.tile, context) || '连风雀头', fu: 4 });
   } else if (isYakuhaiPair(pair.tile, context)) {
     subtotal += 2;
-    details.push({ name: '役牌雀头', fu: 2 });
+    details.push({ name: pairName(pair.tile, context) || '役牌雀头', fu: 2 });
   }
 
   // 听牌形符
