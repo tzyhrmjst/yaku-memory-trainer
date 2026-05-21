@@ -19,53 +19,59 @@
       <image class="stats-bg-image" src="/assets/images/mahjong-header.jpg" mode="aspectFill" />
       <view class="stats-header">
         <text class="greeting">日麻役种牌型记忆助手</text>
+        <text class="subtitle">役种记忆、牌型理解与算分练习</text>
       </view>
-      <view class="stats-grid">
-        <stat-card
-          value="{{stats.todayAnswered}}"
-          label="今日答题"
-          bgColor="rgba(232, 245, 233, 0.9)"
-          valueColor="#2e7d32"
-        />
-        <stat-card value="{{stats.accuracy}}%" label="正确率" bgColor="rgba(227, 242, 253, 0.9)" valueColor="#1565c0" />
-        <stat-card value="{{stats.streak}}" label="连续天数" bgColor="rgba(255, 243, 224, 0.9)" valueColor="#e65100" />
-        <stat-card
-          value="{{stats.totalAnswered}}"
-          label="累计答题"
-          bgColor="rgba(243, 229, 245, 0.9)"
-          valueColor="#7b1fa2"
-        />
-        <stat-card value="{{wrongCount}}" label="错题本" bgColor="rgba(255, 235, 238, 0.9)" valueColor="#c62828" />
-        <stat-card
-          value="{{stats.studyDays}}"
-          label="学习天数"
-          bgColor="rgba(224, 242, 241, 0.9)"
-          valueColor="#00695c"
-        />
+
+      <view class="stats-overview">
+        <text class="overview-title">今日概览</text>
+        <view class="overview-row">
+          <view class="overview-card">
+            <text class="overview-label">今日练习</text>
+            <text class="overview-value">{{stats.todayAnswered}}题</text>
+          </view>
+          <view class="overview-card">
+            <text class="overview-label">今日正确率</text>
+            <text class="overview-value">{{stats.todayAnswered ? stats.todayAccuracy + '%' : '—'}}</text>
+          </view>
+        </view>
+        <view class="overview-hint">累计答题 {{stats.totalAnswered}} 道</view>
       </view>
     </view>
 
-    <!-- 入口按钮 -->
+    <!-- 常用功能 -->
     <view class="entry-section">
+      <view class="section-title">常用功能</view>
       <view class="entry-grid">
-        <view class="entry-card" bindtap="goCatalog">
-          <view class="entry-icon">📖</view>
-          <view class="entry-name">役种图鉴</view>
-          <view class="entry-desc">查看全部役种</view>
-        </view>
-
         <view class="entry-card" bindtap="goQuiz">
           <view class="entry-icon">✏️</view>
           <view class="entry-name">开始练习</view>
           <view class="entry-desc">看牌猜役</view>
         </view>
 
-        <view class="entry-card" bindtap="goWeaknessQuiz">
-          <view class="entry-icon">🎯</view>
-          <view class="entry-name">弱项练习</view>
-          <view class="entry-desc">针对薄弱环节</view>
+        <view class="entry-card" bindtap="goScorePractice">
+          <view class="entry-icon">🧮</view>
+          <view class="entry-name">算分练习</view>
+          <view class="entry-desc">番符与点数训练</view>
         </view>
 
+        <view class="entry-card" bindtap="goAnalyzer">
+          <view class="entry-icon">🀄</view>
+          <view class="entry-name">手牌分析</view>
+          <view class="entry-desc">向听与切牌建议</view>
+        </view>
+
+        <view class="entry-card" bindtap="goCatalog">
+          <view class="entry-icon">📖</view>
+          <view class="entry-name">役种图鉴</view>
+          <view class="entry-desc">查看全部役种</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 复习与进度 -->
+    <view class="entry-section">
+      <view class="section-title">复习与进度</view>
+      <view class="entry-grid">
         <view class="entry-card" bindtap="goWrongBook">
           <view class="entry-icon">📝</view>
           <view class="entry-name">错题本</view>
@@ -77,32 +83,22 @@
           <view class="entry-name">我的进度</view>
           <view class="entry-desc">学习统计</view>
         </view>
-
-        <view class="entry-card" bindtap="goAnalyzer">
-          <view class="entry-icon">🀄</view>
-          <view class="entry-name">手牌分析</view>
-          <view class="entry-desc">向听与切牌建议</view>
-        </view>
-
-        <view class="entry-card" bindtap="goScorePractice">
-          <view class="entry-icon">🧮</view>
-          <view class="entry-name">算分练习</view>
-          <view class="entry-desc">番符与点数训练</view>
-        </view>
-
-        <button
-          class="entry-card feedback-card"
-          open-type="contact"
-          session-from="home-feedback"
-          show-message-card="{{true}}"
-          send-message-title="日麻役种牌型记忆助手"
-          send-message-path="/pages/index/index"
-        >
-          <view class="entry-icon">💬</view>
-          <view class="entry-name">反馈建议</view>
-          <view class="entry-desc">问题反馈与建议</view>
-        </button>
       </view>
+    </view>
+
+    <!-- 反馈建议 -->
+    <view class="entry-section">
+      <button
+        class="feedback-btn"
+        open-type="contact"
+        session-from="home-feedback"
+        show-message-card="{{true}}"
+        send-message-title="日麻役种牌型记忆助手"
+        send-message-path="/pages/index/index"
+      >
+        <text class="feedback-icon">💬</text>
+        <text class="feedback-text">反馈建议</text>
+      </button>
     </view>
   </block>
 </view>

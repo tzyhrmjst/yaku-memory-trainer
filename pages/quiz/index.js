@@ -35,24 +35,30 @@ Page({
     const records = storage.getRecords();
     const excludeIds = records.map(r => r.questionId);
 
-    const quizSet = mode === 'weakness'
-      ? buildWeaknessQuizSet(10, excludeIds)
-      : buildQuizSet(10, excludeIds, yakuIds);
+    try {
+      const quizSet = mode === 'weakness'
+        ? buildWeaknessQuizSet(10, excludeIds)
+        : buildQuizSet(10, excludeIds, yakuIds);
 
-    if (quizSet.length === 0) {
-      wx.showToast({ title: '暂无题目', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 1500);
-      return;
+      if (quizSet.length === 0) {
+        wx.showToast({ title: '暂无题目', icon: 'none' });
+        this.setData({ loading: false });
+        return;
+      }
+
+      this.setData({
+        mode: mode,
+        quizSet: quizSet,
+        totalQuestions: quizSet.length,
+        loading: false
+      });
+
+      this.showQuestion(0);
+    } catch (e) {
+      console.error('build quiz set error:', e);
+      this.setData({ loading: false });
+      wx.showToast({ title: '出题失败，请重试', icon: 'none', duration: 1500 });
     }
-
-    this.setData({
-      mode,
-      quizSet,
-      totalQuestions: quizSet.length,
-      loading: false
-    });
-
-    this.showQuestion(0);
   },
 
   // 展示题目
@@ -150,9 +156,20 @@ Page({
 
   // 再练一次
   onRetry() {
-    const quizSet = this.data.mode === 'weakness'
-      ? buildWeaknessQuizSet(10)
-      : buildQuizSet(10);
+    let quizSet = [];
+    try {
+      quizSet = this.data.mode === 'weakness'
+        ? buildWeaknessQuizSet(10)
+        : buildQuizSet(10);
+    } catch (e) {
+      console.error('retry build quiz set error:', e);
+      wx.showToast({ title: '出题失败，请重试', icon: 'none', duration: 1500 });
+      return;
+    }
+    if (quizSet.length === 0) {
+      wx.showToast({ title: '暂无题目', icon: 'none', duration: 1500 });
+      return;
+    }
     this.setData({
       loading: false,
       completed: false,

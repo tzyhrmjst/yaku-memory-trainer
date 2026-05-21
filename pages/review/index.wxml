@@ -10,7 +10,7 @@
   <block wx:elif="{{empty}}">
     <empty-state text="暂无待复习的错题" subText="去练习中积累错题吧" emoji="🎉">
       <view slot="action" class="mt-24">
-        <t-button theme="primary" size="medium" bindtap="onGoHome">去练习</t-button>
+        <t-button theme="primary" size="medium" bindtap="goQuiz">去练习</t-button>
       </view>
     </empty-state>
   </block>
@@ -36,7 +36,7 @@
 
         <!-- 牌面 -->
         <view wx:if="{{currentQuestion.tiles}}" class="tile-section">
-          <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
+          <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" concealedTiles="{{currentQuestion.concealedTiles}}" melds="{{currentQuestion.melds}}" />
           <view wx:if="{{currentQuestion.context}}" class="tile-context">
             ⚠️ {{currentQuestion.context}}
           </view>

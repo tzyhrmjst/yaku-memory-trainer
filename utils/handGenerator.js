@@ -312,7 +312,9 @@ function generateGenericHand() {
   // 兜底
   return {
     tiles: ['2m','3m','4m','5p','6p','7p','3s','4s','5s','6s','7s','8s','9s','9s'],
-    winTile: '9s'
+    winTile: '9s',
+    groups: null,
+    pair: null
   };
 }
 
@@ -351,7 +353,9 @@ function generateChiitoitsu() {
   return {
     tiles: tiles,
     winTile: pairs[6][0],
-    contextHint: '该手牌门前清，七对子形'
+    contextHint: '该手牌门前清，七对子形',
+    groups: null,
+    pair: null
   };
 }
 
@@ -362,7 +366,9 @@ function generateKokushiMusou() {
   return {
     tiles: shuffle(tiles),
     winTile: extra,
-    contextHint: '该手牌门前清，国士无双形'
+    contextHint: '该手牌门前清，国士无双形',
+    groups: null,
+    pair: null
   };
 }
 
@@ -379,7 +385,9 @@ function generateChuurenPoutou() {
   return {
     tiles: shuffle(tiles),
     winTile: extra,
-    contextHint: '该手牌门前清，九莲宝灯形'
+    contextHint: '该手牌门前清，九莲宝灯形',
+    groups: null,
+    pair: null
   };
 }
 
@@ -438,7 +446,9 @@ function generateHonitsu() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -501,7 +511,9 @@ function generateRyuuiisou() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -564,7 +576,9 @@ function generateHonchantaiyaochuu() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -604,7 +618,9 @@ function generateJunchanTaiyaochuu() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -650,7 +666,9 @@ function generateYakuhai() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露，含三元牌刻子' : '该手牌门前清，含三元牌刻子'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露，含三元牌刻子' : '该手牌门前清，含三元牌刻子',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -699,7 +717,9 @@ function generateShousangen() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -733,7 +753,9 @@ function generateDaisangen() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -772,7 +794,9 @@ function generateShousuushii() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -799,7 +823,9 @@ function generateDaisuushii() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -836,7 +862,9 @@ function generatePinfu() {
     return {
       tiles: tiles,
       winTile: pickPinfuWinTile(groups),
-      contextHint: '该手牌门前清，以荣和方式获胜（未立直）'
+      contextHint: '该手牌门前清，以荣和方式获胜（未立直）',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -909,7 +937,9 @@ function generateIipeikou() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: '该手牌门前清，未立直'
+      contextHint: '该手牌门前清，未立直',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -957,7 +987,9 @@ function generateRyanpeikou() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: '该手牌门前清，含两组一杯口'
+      contextHint: '该手牌门前清，含两组一杯口',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -1004,7 +1036,9 @@ function generateSanshokuDoujun() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -1058,7 +1092,9 @@ function generateIttsuu() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -1094,7 +1130,9 @@ function generateSanankou() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露（明顺子）' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露（明顺子）' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -1169,7 +1207,9 @@ function generateSanshokuDoukou() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清'
+      contextHint: Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清',
+      groups: groups,
+      pair: pair
     };
   }
   return null;
@@ -1273,6 +1313,8 @@ function generateProcedural(yakuId) {
   var hand = generateGenericHand();
   if (!hand) return null;
   hand.contextHint = PROCEDURAL_HINTS[yakuId] || '';
+  if (!hand.groups) hand.groups = null;
+  if (!hand.pair) hand.pair = null;
   return hand;
 }
 
@@ -1340,11 +1382,15 @@ function generateHand(yakuId, variant) {
     try {
       var result = generator(yakuId, variant);
       if (result && result.tiles && result.tiles.length >= 14) {
+      var hasOpen = (result.contextHint || '').indexOf('已副露') !== -1;
       return {
         tiles: result.tiles,
         winTile: result.winTile || '',
         contextHint: result.contextHint || '',
-        excludeOptionIds: result.excludeOptionIds || []
+        excludeOptionIds: result.excludeOptionIds || [],
+        groups: result.groups || null,
+        pair: result.pair || null,
+        hasOpenMeld: hasOpen
       };
       }
     } catch (e) {
@@ -1359,7 +1405,10 @@ function generateHand(yakuId, variant) {
       tiles: fallback.exampleTiles,
       winTile: fallback.winTile || '',
       contextHint: fallback.contextHint || '',
-      excludeOptionIds: fallback.excludeOptionIds || []
+      excludeOptionIds: fallback.excludeOptionIds || [],
+      groups: null,
+      pair: null,
+      hasOpenMeld: false
     };
   }
 

@@ -33,9 +33,54 @@
 }
 
 .tile-win-img {
-  border: 3rpx solid @brand-color;
-  border-radius: 6rpx;
+  border: 5rpx solid @brand-color;
+  border-radius: 8rpx;
   box-sizing: content-box;
+  box-shadow: 0 0 10rpx rgba(26, 107, 75, 0.45);
+  position: relative;
+  z-index: 1;
+}
+
+// ===== 分组渲染：副露分隔 =====
+.meld-separator {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 8rpx;
+  margin-left: 4rpx;
+}
+
+.meld-sep-text {
+  font-size: @font-size-xs;
+  color: @text-hint;
+  padding-bottom: 8rpx;
+  white-space: nowrap;
+}
+
+// ===== 分组渲染：副露组 =====
+.meld-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 10rpx;
+  flex-shrink: 0;
+}
+
+.meld-group-tiles {
+  display: flex;
+  flex-direction: row;
+  gap: 4rpx;
+}
+
+.meld-type-label {
+  font-size: 18rpx;
+  color: @text-hint;
+  margin-top: 4rpx;
+  white-space: nowrap;
+}
+
+.meld-label-win {
+  color: @brand-color;
+  font-weight: 700;
 }
 
 // ===== 文字模式（备用） =====

@@ -2,6 +2,7 @@
 const yakus = require('../data/yakus');
 const { generateHand } = require('./handGenerator');
 const { checkAllYaku } = require('./yakuChecker');
+const meldsUtil = require('./melds');
 
 // ===== 题型1: 看牌猜役 =====
 
@@ -163,12 +164,26 @@ function generateTileQuestion(yaku, allYakus, variant) {
     explanation += ' 此手牌还含有：' + satisfiedNames.filter(n => !n.startsWith(yaku.name)).join('、') + '。';
   }
 
+  // 从生成器的 groups/pair 推导 melds/concealedTiles
+  var questionMelds = [];
+  var questionConcealed = hand.tiles.slice();
+  var handHasOpen = hint.indexOf('已副露') !== -1;
+  if (hand.groups && hand.pair && handHasOpen) {
+    var shape = meldsUtil.normalizeHandShape(
+      hand.groups, hand.pair, handHasOpen
+    );
+    questionMelds = shape.melds || [];
+    questionConcealed = shape.concealedTiles || hand.tiles.slice();
+  }
+
   return {
     id: 'auto_' + yaku.id + '_tile_v' + v,
     type: 'tiles-to-yaku',
     yakuId: yaku.id,
     tiles: hand.tiles,
     winTile: hand.winTile || '',
+    melds: questionMelds,
+    concealedTiles: questionConcealed,
     context: hint,
     options,
     answer: options.indexOf(yaku.name),

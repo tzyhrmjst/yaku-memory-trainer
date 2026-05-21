@@ -6,6 +6,7 @@ var builder = require('./scoreAnswerBuilder');
 var sg = require('./scoreQuestionGenerator');
 var dora = require('./dora');
 var sc = require('./scoreCalculator');
+var meldsUtil = require('./melds');
 
 // 难度役种池（只包含有算法生成器的役种）
 var BASIC_YAKU_POOL = [
@@ -261,7 +262,7 @@ function makeOptions(answer, context) {
 /**
  * 单题构建：从手牌生成完整的算分题
  */
-function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
+function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, concealedTiles) {
   // 尝试赤五替换
   var redRate = RED_DORA_RATE[difficulty] || 0;
   var tiles = tryRedDora(handTiles, redRate);
@@ -284,6 +285,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
   for (var ki = 0; ki < keys.length; ki++) { ctx[keys[ki]] = context[keys[ki]]; }
   ctx.doraIndicators = doraIndicators;
   ctx.winTile = winTile;
+  ctx.melds = melds || [];
+  ctx.concealedTiles = concealedTiles || tiles.slice();
 
   var result = builder.buildAnswer(tiles, ctx);
 
@@ -319,6 +322,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
     difficulty: difficulty,
     tiles: tiles,
     winTile: winTile,
+    melds: melds || [],
+    concealedTiles: concealedTiles || tiles.slice(),
     context: {
       winMethod: context.winMethod,
       isDealer: context.isDealer,
@@ -354,7 +359,7 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty) {
 function buildRandomScoreQuestion(opts) {
   opts = opts || {};
   var difficulty = opts.difficulty || 'basic';
-  var maxAttempts = opts.maxAttempts || 80;
+  var maxAttempts = opts.maxAttempts || 40;
 
   var pool;
   if (difficulty === 'advanced') pool = ADVANCED_YAKU_POOL;
@@ -388,9 +393,21 @@ function buildRandomScoreQuestion(opts) {
       }
     }
 
+    // 从生成器的 groups/pair 推导 melds/concealedTiles
+    var questionMelds = [];
+    var questionConcealed = hand.tiles.slice();
+    if (hand.groups && hand.pair && context.hasOpenMeld) {
+      var shape = meldsUtil.normalizeHandShape(
+        hand.groups, hand.pair, context.hasOpenMeld
+      );
+      questionMelds = shape.melds || [];
+      questionConcealed = shape.concealedTiles || hand.tiles.slice();
+    }
+
     // 构建题目
     var question = buildQuestionFromHand(
-      hand.tiles, hand.winTile || '', context, difficulty
+      hand.tiles, hand.winTile || '', context, difficulty,
+      questionMelds, questionConcealed
     );
 
     if (question) return question;

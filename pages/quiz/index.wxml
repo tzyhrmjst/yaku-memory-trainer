@@ -28,7 +28,12 @@
 
         <!-- 牌面展示（猜役题型） -->
         <view wx:if="{{currentQuestion.type === 'tiles-to-yaku' && currentQuestion.tiles}}" class="tile-section">
-          <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
+          <tile-hand
+            tiles="{{currentQuestion.tiles}}"
+            winTile="{{currentQuestion.winTile}}"
+            concealedTiles="{{currentQuestion.concealedTiles}}"
+            melds="{{currentQuestion.melds}}"
+          />
           <view wx:if="{{currentQuestion.context}}" class="tile-context">
             ⚠️ {{currentQuestion.context}}
           </view>

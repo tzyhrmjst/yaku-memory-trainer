@@ -4,7 +4,7 @@
     <block wx:if="{{empty}}">
       <empty-state text="错题本为空" subText="继续练习，错题会自动收集到这里" emoji="📝">
         <view slot="action" class="mt-24">
-          <t-button theme="primary" size="medium" bindtap="goReview">去练习</t-button>
+          <t-button theme="primary" size="medium" bindtap="goQuiz">去练习</t-button>
         </view>
       </empty-state>
     </block>

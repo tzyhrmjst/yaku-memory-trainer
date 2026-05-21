@@ -1,6 +1,44 @@
 <view class="tile-hand">
-  <!-- 图片模式 -->
-  <block wx:if="{{useImages}}">
+  <!-- ===== 分组模式（concealed + melds） ===== -->
+  <block wx:if="{{hasMelds && useImages}}">
+    <!-- 暗牌区 -->
+    <image
+      wx:for="{{concealedDisplay}}"
+      wx:key="index"
+      src="{{item.src}}"
+      class="tile-img {{item.isWinTile ? 'tile-win-img' : ''}}"
+      mode="aspectFit"
+    />
+
+    <!-- 副露分隔 -->
+    <view wx:if="{{meldGroupDisplays.length > 0}}" class="meld-separator">
+      <text class="meld-sep-text">副露</text>
+    </view>
+
+    <!-- 副露组 -->
+    <view wx:for="{{meldGroupDisplays}}" wx:key="index" wx:for-item="group" class="meld-group">
+      <view class="meld-group-tiles">
+        <image
+          wx:for="{{group.tiles}}"
+          wx:key="index"
+          wx:for-item="tile"
+          src="{{tile.src}}"
+          class="tile-img {{tile.isWinTile ? 'tile-win-img' : ''}}"
+          mode="aspectFit"
+        />
+      </view>
+      <text class="meld-type-label {{group.hasWinTile ? 'meld-label-win' : ''}}">{{group.label}}{{group.hasWinTile ? ' · 和了' : ''}}</text>
+    </view>
+
+    <!-- 和了牌（不在副露中时显示） -->
+    <view wx:if="{{winTileDisplay && !winTileInMeld}}" class="tile-win-separator">
+      <text class="win-label">和了</text>
+      <image src="{{winTileDisplay.src}}" class="tile-img tile-win-img" mode="aspectFit" />
+    </view>
+  </block>
+
+  <!-- ===== 旧 Flat 模式（仅 tiles） ===== -->
+  <block wx:elif="{{useImages}}">
     <image
       wx:for="{{displayTiles}}"
       wx:key="index"
@@ -10,17 +48,17 @@
     />
 
     <!-- 和了牌 -->
-    <view wx:if="{{winTileDisplay}}" class="tile-win-separator">
+    <view wx:if="{{winTileDisplayOld}}" class="tile-win-separator">
       <text class="win-label">和了</text>
       <image
-        src="{{winTileDisplay.src}}"
+        src="{{winTileDisplayOld.src}}"
         class="tile-img tile-win-img"
         mode="aspectFit"
       />
     </view>
   </block>
 
-  <!-- 文字模式（不启用图片时） -->
+  <!-- ===== 文字模式（备用） ===== -->
   <block wx:else>
     <view
       wx:for="{{displayTiles}}"
@@ -30,10 +68,10 @@
       <text class="tile-text">{{item.text}}</text>
     </view>
 
-    <view wx:if="{{winTileDisplay}}" class="tile-win-separator">
+    <view wx:if="{{winTileDisplayOld}}" class="tile-win-separator">
       <text class="win-label">和了</text>
       <view class="tile tile-win">
-        <text class="tile-text">{{winTileDisplay.text}}</text>
+        <text class="tile-text">{{winTileDisplayOld.text}}</text>
       </view>
     </view>
   </block>

@@ -5,6 +5,7 @@ var yc = require('./yakuChecker');
 var fc = require('./fuCalculator');
 var sc = require('./scoreCalculator');
 var dora = require('./dora');
+var meldsUtil = require('./melds');
 
 // 食下役种表：门清番数 → 副露番数
 var KUISAGARI = {
@@ -47,19 +48,25 @@ var WIND_LABEL = {
 function buildContextHint(context) {
   var parts = [];
   if (context.hasOpenMeld) parts.push('已副露');
+  if (context.doubleRiichi) parts.push('两立直');
   if (context.riichi) parts.push('已宣言立直');
-  else if (context.isMenzen) parts.push('未立直');
+  else if (!context.doubleRiichi && context.isMenzen) parts.push('未立直');
+  if (context.ippatsu) parts.push('一巡内');
   if (context.winMethod === 'tsumo') parts.push('自摸和牌');
   else parts.push('荣和');
   if (context.roundWind) parts.push('场风' + WIND_LABEL[context.roundWind]);
   if (context.seatWind) parts.push('自风' + WIND_LABEL[context.seatWind]);
+  if (context.rinshan) parts.push('岭上');
+  if (context.chankan) parts.push('抢槓');
+  if (context.haitei) parts.push('海底');
+  if (context.houtei) parts.push('河底');
   return parts.join('，');
 }
 
 /**
  * 从 tiles + context 构建完整答案
  * @param {string[]} tiles - 14张手牌（可含 0m/0p/0s 赤五）
- * @param {Object} context - { winMethod, isDealer, isMenzen, hasOpenMeld, roundWind, seatWind, riichi, doraIndicators, winTile }
+ * @param {Object} context - { winMethod, isDealer, isMenzen, hasOpenMeld, roundWind, seatWind, riichi, doraIndicators, doraCountOverride, winTile }
  * @returns {{ valid: boolean, answer?: Object, error?: string }}
  */
 function buildAnswer(tiles, context) {
@@ -91,10 +98,15 @@ function buildAnswer(tiles, context) {
     });
   }
 
-  // 4. 应用食下番数
+  // 4. 役满规范化：上位排他、双倍互斥
+  var normalization = yc.normalizeYakuResult(yakuIds);
+  yakuIds = normalization.ids;
+  var yakumanCount = normalization.yakumanCount;
+
+  // 5. 应用食下番数
   var yakuList = [];
   var baseYakuHan = 0;
-  var isYakuman = false;
+  var isYakuman = yakumanCount > 0;
   var yakuhaiNames = getYakuhaiSpecificNames(normalizedTiles, { roundWind: roundWind, seatWind: seatWind });
   var yakuhaiIdx = 0;
 
@@ -117,42 +129,73 @@ function buildAnswer(tiles, context) {
 
     yakuList.push({ id: id, name: name, han: han });
     baseYakuHan += han;
-
-    if (han >= 13) isYakuman = true;
   });
 
-  // 5. 宝牌统计
-  var doraCount = dora.countDora(tiles, doraIndicators, true);
-  if (doraCount > 0) {
-    yakuList.push({ id: 'dora', name: '宝牌', han: doraCount });
+  // 6. 宝牌统计 — 役满时不加宝牌
+  var doraCount = 0;
+  if (!isYakuman) {
+    if (typeof context.doraCountOverride === 'number') {
+      doraCount = context.doraCountOverride;
+    } else {
+      doraCount = dora.countDora(tiles, doraIndicators, true);
+    }
+    if (doraCount > 0) {
+      yakuList.push({ id: 'dora', name: '宝牌', han: doraCount });
+    }
   }
   var totalHan = baseYakuHan + doraCount;
 
-  // 6. 验证必须有非宝牌役
+  // 7. 验证必须有非宝牌役
   if (baseYakuHan === 0) {
     return { valid: false, error: 'no_non_dora_yaku' };
   }
 
-  // 7. 算符 — 役满不计符
+  // 8. 算符 — 役满不计符
   var fuResult;
   if (isYakuman) {
     fuResult = { fu: 0, fuSubtotal: 0, fuDetails: [] };
   } else {
-    fuResult = fc.calculateFu(normalizedTiles, {
+    var fuContext = {
       winMethod: winMethod,
       winTile: winTile,
       hasOpenMeld: hasOpenMeld,
       roundWind: roundWind,
       seatWind: seatWind
-    });
+    };
+
+    // 如果有完整副露信息，传递 explicitMelds 以提高明暗判定精度
+    if (context.melds && context.melds.length > 0) {
+      var concealed = context.concealedTiles || [];
+      // 从暗牌中找雀头（出现2次的牌）
+      var pairCounts = {};
+      for (var ci = 0; ci < concealed.length; ci++) {
+        pairCounts[concealed[ci]] = (pairCounts[concealed[ci]] || 0) + 1;
+      }
+      var pairTile = '';
+      for (var pt in pairCounts) {
+        if (pairCounts.hasOwnProperty(pt) && pairCounts[pt] >= 2) {
+          pairTile = pt;
+          break;
+        }
+      }
+      var explicitData = meldsUtil.toExplicitMelds(context.melds, pairTile);
+      // 只有当 able to build complete 4 meld + 1 pair 时才使用 bypass
+      if (explicitData.explicitMelds.length === 4) {
+        fuContext.explicitMelds = explicitData.explicitMelds;
+        fuContext.explicitPair = explicitData.explicitPair;
+      }
+    }
+
+    fuResult = fc.calculateFu(normalizedTiles, fuContext);
   }
 
-  // 8. 算点
+  // 9. 算点 — 役满使用 yakumanCount，否则使用 han/fu
   var pointResult = sc.calculatePoints({
     han: totalHan,
     fu: fuResult.fu,
     winMethod: winMethod,
-    isDealer: isDealer
+    isDealer: isDealer,
+    yakumanCount: yakumanCount
   });
 
   // 9. 生成解释
@@ -172,11 +215,13 @@ function buildAnswer(tiles, context) {
       limit: pointResult.limit || undefined,
       pointText: pointResult.pointText,
       totalPoints: pointResult.totalPoints,
+      payments: pointResult.payments,
       yaku: yakuList,
       fuDetails: fuResult.fuDetails,
       explanation: explanation,
       baseYakuHan: baseYakuHan,
-      doraCount: doraCount
+      doraCount: doraCount,
+      yakumanCount: yakumanCount
     },
     doraDisplays: doraDisplays
   };

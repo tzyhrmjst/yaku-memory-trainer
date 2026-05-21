@@ -132,27 +132,37 @@ Page({
   },
 
   runAnalysis: function () {
-    var self = this;
     var tiles = this.data.selectedTiles;
     if (tiles.length !== 14) return;
 
-    setTimeout(function () {
+    try {
       var contextHint = [];
 
-      contextHint.push(self.data.hasOpenMeld ? '已副露' : '门前清');
-      contextHint.push(self.data.winMethod === 'tsumo' ? '自摸' : '荣和');
+      contextHint.push(this.data.hasOpenMeld ? '已副露' : '门前清');
+      contextHint.push(this.data.winMethod === 'tsumo' ? '自摸' : '荣和');
 
       var result = ha.analyzeHand({
         tiles: tiles,
         context: {
           contextHint: contextHint.join('，'),
-          hasOpenMeld: self.data.hasOpenMeld,
-          winMethod: self.data.winMethod,
+          hasOpenMeld: this.data.hasOpenMeld,
+          winMethod: this.data.winMethod,
         },
       });
-      self._enrichAnalysis(result);
-      self.setData({ analysis: result });
-    }, 50);
+      this._enrichAnalysis(result);
+      this.setData({ analysis: result });
+    } catch (e) {
+      console.error('hand analysis error:', e);
+      this.setData({
+        analysis: {
+          valid: false,
+          errors: ['分析超时或失败，请调整手牌后重试'],
+          summary: null,
+          closestYaku: [],
+          discards: []
+        }
+      });
+    }
   },
 
   // 给分析结果补充图片路径和通俗标签

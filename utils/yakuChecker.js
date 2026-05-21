@@ -786,11 +786,82 @@ function sortByHan(ids) {
 }
 
 // =========================================================================
+// Yaku normalization: yakuman exclusion & double yakuman mutual exclusion
+// =========================================================================
+
+/**
+ * 规范化役种结果：处理役满排他、双倍役满互斥、yakumanCount 计算
+ * @param {string[]} ids - checkAllYaku 返回的役种 ID 列表
+ * @param {Object} [ruleOptions] - 规则开关
+ * @param {boolean} [ruleOptions.doubleYakuman] - 是否采用双倍役满（默认 true）
+ * @returns {{ ids: string[], yakumanCount: number }}
+ */
+function normalizeYakuResult(ids, ruleOptions) {
+  ruleOptions = ruleOptions || {};
+  var doubleYakuman = ruleOptions.doubleYakuman !== false;
+
+  // 分离役满和非役满
+  var yakumanIds = [];
+  var nonYakumanIds = [];
+  for (var i = 0; i < ids.length; i++) {
+    var id = ids[i];
+    if ((YAKU_HAN[id] || 0) >= 13) {
+      yakumanIds.push(id);
+    } else {
+      nonYakumanIds.push(id);
+    }
+  }
+
+  // 没有役满时，原样返回
+  if (yakumanIds.length === 0) {
+    return { ids: ids, yakumanCount: 0 };
+  }
+
+  // 双倍役满互斥：高阶出现时移除低阶
+  var exclusionPairs = [
+    ['suuankou_tanki', 'suuankou'],
+    ['daisuushii', 'shousuushii'],
+    ['kokushi_musou_13men', 'kokushi_musou'],
+    ['junsei_chuuren_poutou', 'chuuren_poutou']
+  ];
+
+  var removeSet = {};
+  for (var e = 0; e < exclusionPairs.length; e++) {
+    var higher = exclusionPairs[e][0];
+    var lower = exclusionPairs[e][1];
+    if (yakumanIds.indexOf(higher) !== -1) {
+      removeSet[lower] = true;
+    }
+  }
+
+  // 过滤：只保留役满类，移除被高阶覆盖的低阶役满
+  var normalizedIds = [];
+  for (var j = 0; j < yakumanIds.length; j++) {
+    if (!removeSet[yakumanIds[j]]) {
+      normalizedIds.push(yakumanIds[j]);
+    }
+  }
+
+  // 计算 yakumanCount
+  var yakumanCount = 0;
+  for (var k = 0; k < normalizedIds.length; k++) {
+    var hanVal = YAKU_HAN[normalizedIds[k]] || 0;
+    if (hanVal >= 13) {
+      var multiplier = doubleYakuman ? (hanVal / 13) : 1;
+      yakumanCount += multiplier;
+    }
+  }
+
+  return { ids: normalizedIds, yakumanCount: yakumanCount };
+}
+
+// =========================================================================
 // Exports
 // =========================================================================
 
 module.exports = {
   checkAllYaku,
+  normalizeYakuResult,
   // 暴露内部函数便于测试
   checkKokushiMusou,
   checkKokushiMusou13men,

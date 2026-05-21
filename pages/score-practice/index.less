@@ -119,6 +119,33 @@
   font-weight: 500;
 }
 
+// 副露摘要
+.meld-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 12rpx;
+  padding: 8rpx 16rpx;
+  background: #fdf6e3;
+  border-radius: @radius-default;
+}
+
+.meld-summary-label {
+  font-size: 24rpx;
+  color: @text-secondary;
+}
+
+.meld-summary-item {
+  font-size: 24rpx;
+  color: #b58900;
+  font-weight: 600;
+  padding: 2rpx 8rpx;
+  background: #fef0c7;
+  border-radius: 4rpx;
+}
+
 .loading-card {
   margin: 16rpx;
   background: @bg-white;
@@ -583,6 +610,27 @@
   background: #fce4ec;
 }
 
+.hand-actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.hand-action {
+  font-size: @font-size-xs;
+  color: @brand-color;
+  padding: 4rpx 16rpx;
+  border-radius: @radius-default;
+  background: #e8f5e9;
+  font-weight: 600;
+}
+
+.hand-tile-win {
+  box-shadow: 0 0 0 5rpx #4caf50, 0 0 16rpx rgba(76, 175, 80, 0.5) !important;
+  border-radius: 6rpx;
+  transform: translateY(-4rpx);
+}
+
 .hand-tiles {
   display: flex; flex-wrap: wrap; gap: 10rpx;
 }
@@ -642,6 +690,10 @@
   border: 2rpx solid @brand-color;
 }
 
+.context-segment-compact {
+  flex-shrink: 0;
+}
+
 .context-option {
   padding: 10rpx 28rpx;
   font-size: @font-size-sm;
@@ -652,10 +704,49 @@
   & + & { border-left: 2rpx solid @brand-color; }
 }
 
+.context-option-compact {
+  padding: 8rpx 18rpx;
+  min-width: 40rpx;
+  text-align: center;
+}
+
 .context-option-active {
   background: @brand-color;
   color: #fff;
   font-weight: 600;
+}
+
+.context-row-stack {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.event-yaku-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  width: 100%;
+}
+
+.event-yaku-chip {
+  padding: 8rpx 20rpx;
+  border-radius: @radius-default;
+  border: 2rpx solid #d7e8dc;
+  background: #fff;
+  color: @text-secondary;
+  font-size: @font-size-xs;
+  font-weight: 600;
+}
+
+.event-yaku-chip-active {
+  border-color: @brand-color;
+  background: #e8f5e9;
+  color: @brand-color;
+}
+
+.event-yaku-chip-disabled {
+  opacity: 0.45;
 }
 
 // 宝牌步进器
@@ -708,7 +799,6 @@
 .calc-btn-disabled {
   background: #ccc;
   box-shadow: none;
-  pointer-events: none;
 }
 
 // ===== 自由模式 — 计算结果 =====
@@ -783,4 +873,157 @@
 
 .no-yaku-hint {
   margin-bottom: 12rpx;
+}
+
+// 手牌不完整错误提示
+.hand-incomplete-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 32rpx 24rpx;
+  text-align: center;
+}
+
+.incomplete-icon {
+  font-size: 56rpx;
+}
+
+.incomplete-text {
+  font-size: @font-size-default;
+  color: @wrong-color;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+// ===== 副露编辑器 =====
+.hand-tile-selectable {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hand-tile-selected {
+  transform: translateY(-8rpx);
+  box-shadow: 0 0 0 3rpx @brand-color;
+  border-radius: 6rpx;
+  background: rgba(67, 155, 99, 0.08);
+}
+
+// 副露列表
+.meld-list-section {
+  margin: 0 16rpx 12rpx;
+  padding: 16rpx 20rpx;
+  background: #fdf6e3;
+  border-radius: @radius-default;
+  border: 1rpx solid #f0e3be;
+}
+
+.meld-list-title {
+  font-size: @font-size-xs;
+  color: #b58900;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.meld-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.meld-list-item {
+  display: flex;
+  align-items: center;
+  gap: 2rpx;
+  padding: 4rpx 8rpx;
+  background: #fef0c7;
+  border-radius: 6rpx;
+}
+
+.meld-list-label {
+  font-size: 22rpx;
+  color: #b58900;
+  font-weight: 700;
+  margin-right: 4rpx;
+  min-width: 48rpx;
+}
+
+.meld-list-tile {
+  width: 40rpx;
+  height: 56rpx;
+}
+
+.meld-list-remove {
+  margin-left: 6rpx;
+  font-size: 22rpx;
+  color: #dc3545;
+  padding: 2rpx 6rpx;
+}
+
+// 副露编辑入口
+.meld-edit-entry {
+  margin: 0 16rpx 12rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.meld-edit-btn {
+  padding: 10rpx 32rpx;
+  background: #fdf6e3;
+  border: 1rpx solid #d4a017;
+  border-radius: @radius-default;
+  font-size: @font-size-sm;
+  color: #b58900;
+  font-weight: 600;
+}
+
+// 副露编辑面板
+.meld-editor {
+  margin: 0 16rpx 12rpx;
+  padding: 20rpx;
+  background: @bg-white;
+  border-radius: @radius-default;
+  border: 1rpx solid #e0e0e0;
+  text-align: center;
+}
+
+.meld-editor-title {
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  margin-bottom: 16rpx;
+}
+
+.meld-editor-types {
+  display: flex;
+  gap: 16rpx;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.meld-type-btn {
+  padding: 12rpx 32rpx;
+  background: @brand-color;
+  color: white;
+  border-radius: @radius-default;
+  font-size: @font-size-default;
+  font-weight: 600;
+}
+
+.meld-type-btn-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.meld-editor-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.meld-editor-cancel {
+  padding: 8rpx 24rpx;
+  border: 1rpx solid #ccc;
+  border-radius: @radius-default;
+  font-size: @font-size-sm;
+  color: @text-secondary;
 }

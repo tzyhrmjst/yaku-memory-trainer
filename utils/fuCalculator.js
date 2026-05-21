@@ -125,14 +125,11 @@ function calculateFuForPartition(partition, context) {
   // 确定听牌形
   var waitType = context.waitType || getWaitType(melds, pair, winTile);
 
-  // 门清/副露荣和/自摸
+  // 门清荣和 +10 符；副露荣和无额外加符
   if (winMethod === 'ron') {
     if (isMenzen) {
       subtotal += 10;
       details.push({ name: '门前荣和', fu: 10 });
-    } else {
-      subtotal += 2;
-      details.push({ name: '食下荣和', fu: 2 });
     }
   } else {
     // 自摸 — 检查此拆分是否满足平和形
@@ -212,6 +209,12 @@ function calculateFuForPartition(partition, context) {
 
   // 进位到十位
   var fu = Math.ceil(subtotal / 10) * 10;
+
+  // 副露平和形荣和最低 30 符：荣和且无其他加符时按 30 符处理
+  if (fu === 20 && winMethod === 'ron') {
+    fu = 30;
+    details.push({ name: '副露平和形荣和最低30符', fu: 0 });
+  }
 
   return { fu: fu, fuSubtotal: subtotal, fuDetails: details };
 }

@@ -40,7 +40,11 @@
 
     <block wx:elif="{{!stopped && currentQuestion}}">
       <view class="question-card">
-        <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" />
+        <tile-hand tiles="{{currentQuestion.tiles}}" winTile="{{currentQuestion.winTile}}" concealedTiles="{{currentQuestion.concealedTiles}}" melds="{{currentQuestion.melds}}" />
+        <view wx:if="{{currentQuestion.melds && currentQuestion.melds.length > 0}}" class="meld-summary">
+          <text class="meld-summary-label">副露：</text>
+          <text wx:for="{{currentQuestion.melds}}" wx:key="index" class="meld-summary-item">{{item.label}}</text>
+        </view>
         <view class="question-prompt">这手牌应如何计分？</view>
       </view>
 
@@ -169,12 +173,18 @@
     <!-- 当前手牌 -->
     <view class="hand-section">
       <view class="hand-bar">
-        <view class="hand-title">你的手牌（点击可移除）</view>
-        <view class="hand-clear" bindtap="onFreeClear" wx:if="{{selectedCount > 0}}">清空</view>
+        <view class="hand-title">
+          {{freeMeldEditOpen ? '选择牌张（点击选中/取消）' : (freeSelectingWinTile ? '点击牌张选择和了牌' : '你的手牌（点击可移除）')}}
+        </view>
+        <view class="hand-actions">
+          <view class="hand-action" bindtap="onToggleWinTileSelect" wx:if="{{selectedCount >= 14 && !freeMeldEditOpen && !freeSelectingWinTile && !freeWinTile}}">选择和了牌</view>
+          <view class="hand-action" bindtap="onToggleWinTileSelect" wx:if="{{freeSelectingWinTile}}">取消</view>
+          <view class="hand-clear" bindtap="onFreeClear" wx:if="{{selectedCount > 0 && !freeMeldEditOpen && !freeSelectingWinTile}}">清空</view>
+        </view>
       </view>
       <view class="hand-tiles">
         <block wx:for="{{selectedDisplay}}" wx:key="index">
-          <view class="hand-tile" data-tile="{{item.code}}" bindtap="onFreeRemoveTile">
+          <view class="hand-tile {{freeMeldEditOpen ? 'hand-tile-selectable' : ''}} {{freeMeldEditOpen && freeMeldSelectedFlags[index] ? 'hand-tile-selected' : ''}} {{freeWinTileIndex === index ? 'hand-tile-win' : ''}}" data-index="{{index}}" data-tile="{{item.code}}" bindtap="onFreeHandTileTap">
             <image class="hand-tile-img" src="{{item.src}}" mode="aspectFit" />
           </view>
         </block>
@@ -182,6 +192,38 @@
           <view class="hand-tile hand-tile-empty"></view>
         </block>
       </view>
+    </view>
+
+    <!-- 副露列表 -->
+    <view class="meld-list-section" wx:if="{{freeMelds.length > 0}}">
+      <view class="meld-list-title">副露</view>
+      <view class="meld-list">
+        <view class="meld-list-item" wx:for="{{freeMelds}}" wx:key="index">
+          <text class="meld-list-label">{{item.label}}</text>
+          <block wx:for="{{item.tiles}}" wx:for-item="tcode" wx:key="*this">
+            <image class="meld-list-tile" src="/assets/tiles/{{tcode}}.png" mode="aspectFit" />
+          </block>
+          <view class="meld-list-remove" data-index="{{index}}" bindtap="onFreeRemoveMeld" wx:if="{{!freeMeldEditOpen}}">✕</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 副露编辑面板 -->
+    <view class="meld-editor" wx:if="{{freeMeldEditOpen}}">
+      <view class="meld-editor-title">选择牌张后，设定副露类型</view>
+      <view class="meld-editor-types">
+        <view class="meld-type-btn {{freeMeldSelectedIndices.length === 3 ? '' : 'meld-type-btn-disabled'}}" data-type="chi" bindtap="onFreeSetMeldType">吃</view>
+        <view class="meld-type-btn {{freeMeldSelectedIndices.length === 3 ? '' : 'meld-type-btn-disabled'}}" data-type="pon" bindtap="onFreeSetMeldType">碰</view>
+        <view class="meld-type-btn {{freeMeldSelectedIndices.length === 4 ? '' : 'meld-type-btn-disabled'}}" data-type="kan" bindtap="onFreeSetMeldType">杠</view>
+      </view>
+      <view class="meld-editor-actions">
+        <view class="meld-editor-cancel" bindtap="onToggleMeldEditor">完成编辑</view>
+      </view>
+    </view>
+
+    <!-- 副露编辑入口 -->
+    <view class="meld-edit-entry" wx:if="{{freeHasOpenMeld && !freeMeldEditOpen && selectedCount >= 5}}">
+      <view class="meld-edit-btn" bindtap="onToggleMeldEditor">编辑副露</view>
     </view>
 
     <!-- 对局条件 -->
@@ -195,12 +237,24 @@
         </view>
       </view>
       <view class="context-row">
+        <text class="context-label">场风</text>
+        <view class="context-segment context-segment-compact">
+          <view wx:for="{{windOptions}}" wx:key="code" class="context-option context-option-compact {{freeRoundWind === item.code ? 'context-option-active' : ''}}" data-type="round" data-value="{{item.code}}" bindtap="onFreeWindChange">{{item.label}}</view>
+        </view>
+      </view>
+      <view class="context-row">
+        <text class="context-label">自风</text>
+        <view class="context-segment context-segment-compact">
+          <view wx:for="{{windOptions}}" wx:key="code" class="context-option context-option-compact {{freeSeatWind === item.code ? 'context-option-active' : ''}}" data-type="seat" data-value="{{item.code}}" bindtap="onFreeWindChange">{{item.label}}</view>
+        </view>
+      </view>
+      <view class="context-row">
         <text class="context-label">有吃/碰/明杠</text>
         <switch checked="{{freeHasOpenMeld}}" bindchange="onFreeOpenMeldChange" />
       </view>
       <view class="context-row">
         <text class="context-label">立直</text>
-        <switch checked="{{freeRiichi}}" bindchange="onFreeRiichiChange" />
+        <switch checked="{{freeRiichi}}" disabled="{{freeHasOpenMeld}}" bindchange="onFreeRiichiChange" />
       </view>
       <view class="context-row">
         <text class="context-label">宝牌数</text>
@@ -210,33 +264,60 @@
           <view class="dora-btn" data-value="{{freeDoraCount + 1}}" bindtap="onFreeDoraCountChange" wx:if="{{freeDoraCount < 10}}">+</view>
         </view>
       </view>
+      <view class="context-row">
+        <text class="context-label">本场</text>
+        <view class="dora-stepper">
+          <view class="dora-btn" data-type="honba" data-value="{{freeHonbaCount - 1}}" bindtap="onFreeCounterChange" wx:if="{{freeHonbaCount > 0}}">−</view>
+          <text class="dora-val">{{freeHonbaCount}}</text>
+          <view class="dora-btn" data-type="honba" data-value="{{freeHonbaCount + 1}}" bindtap="onFreeCounterChange">+</view>
+        </view>
+      </view>
+      <view class="context-row">
+        <text class="context-label">供托</text>
+        <view class="dora-stepper">
+          <view class="dora-btn" data-type="riichi" data-value="{{freeRiichiSticks - 1}}" bindtap="onFreeCounterChange" wx:if="{{freeRiichiSticks > 0}}">−</view>
+          <text class="dora-val">{{freeRiichiSticks}}</text>
+          <view class="dora-btn" data-type="riichi" data-value="{{freeRiichiSticks + 1}}" bindtap="onFreeCounterChange">+</view>
+        </view>
+      </view>
+      <view class="context-row context-row-stack">
+        <text class="context-label">偶发役</text>
+        <view class="event-yaku-grid">
+          <view class="event-yaku-chip {{freeEventYaku.ippatsu ? 'event-yaku-chip-active' : ''}} {{freeHasOpenMeld || !freeRiichi ? 'event-yaku-chip-disabled' : ''}}" data-key="ippatsu" bindtap="onFreeEventYakuToggle">一发</view>
+          <view class="event-yaku-chip {{freeEventYaku.rinshan ? 'event-yaku-chip-active' : ''}} {{freeWinMethod !== 'tsumo' ? 'event-yaku-chip-disabled' : ''}}" data-key="rinshan" bindtap="onFreeEventYakuToggle">岭上</view>
+          <view class="event-yaku-chip {{freeEventYaku.chankan ? 'event-yaku-chip-active' : ''}} {{freeWinMethod !== 'ron' ? 'event-yaku-chip-disabled' : ''}}" data-key="chankan" bindtap="onFreeEventYakuToggle">抢杠</view>
+          <view class="event-yaku-chip {{freeEventYaku.haitei ? 'event-yaku-chip-active' : ''}} {{freeWinMethod !== 'tsumo' ? 'event-yaku-chip-disabled' : ''}}" data-key="haitei" bindtap="onFreeEventYakuToggle">海底</view>
+          <view class="event-yaku-chip {{freeEventYaku.houtei ? 'event-yaku-chip-active' : ''}} {{freeWinMethod !== 'ron' ? 'event-yaku-chip-disabled' : ''}}" data-key="houtei" bindtap="onFreeEventYakuToggle">河底</view>
+        </view>
+      </view>
     </view>
 
     <!-- 计算按钮 -->
     <view class="calc-row">
-      <view class="calc-btn {{selectedCount === 14 ? '' : 'calc-btn-disabled'}}" bindtap="onFreeCalculate">计算得分</view>
+      <view class="calc-btn {{selectedCount === 14 && freeWinTile ? '' : 'calc-btn-disabled'}}" bindtap="onFreeCalculate">{{selectedCount < 14 ? '请先选满14张' : (freeWinTile ? '计算得分' : '请先选择和了牌')}}</view>
     </view>
 
     <!-- 计算结果 -->
     <view class="explanation-card" wx:if="{{freeCalculated && freeResult}}">
+      <!-- 手牌不完整错误提示 -->
+      <view class="hand-incomplete-error" wx:if="{{freeResult.error}}">
+        <text class="incomplete-icon">⚠️</text>
+        <text class="incomplete-text">{{freeResult.errorMessage}}</text>
+      </view>
+
+      <block wx:else>
       <view class="calc-result-header">
         <text class="calc-result-label">计算结果</text>
         <text class="calc-result-value">{{freeResult.totalHan}}番{{freeResult.fu}}符</text>
         <text class="calc-result-limit" wx:if="{{freeResult.limit}}">（{{freeResult.limit.name}}）</text>
       </view>
 
-      <!-- 双列得分：子家 | 庄家 -->
       <view class="dual-result">
-        <view class="dual-col">
-          <view class="dual-col-label">子家（闲家）</view>
-          <view class="dual-col-value">{{freeResult.childResult.pointText}}</view>
-          <view class="dual-col-detail">{{freeResult.winMethod === 'tsumo' ? '自摸和了' : '荣和得点'}}</view>
-        </view>
-        <view class="dual-divider"></view>
-        <view class="dual-col">
-          <view class="dual-col-label">庄家（亲家）</view>
-          <view class="dual-col-value">{{freeResult.dealerResult.pointText}}</view>
-          <view class="dual-col-detail">{{freeResult.winMethod === 'tsumo' ? '自摸和了' : '荣和得点'}}</view>
+        <view class="dual-col dual-col-primary">
+          <view class="dual-col-label">{{freeResult.isDealer ? '庄家（亲家）' : '子家（闲家）'}}</view>
+          <view class="dual-col-value">{{freeResult.playerResult.pointText}}</view>
+          <view class="dual-col-detail">{{freeResult.winMethod === 'tsumo' ? '自摸支付' : '荣和得点'}}</view>
+          <view class="dual-col-detail" wx:if="{{freeResult.playerResult.bonusText}}">{{freeResult.playerResult.bonusText}}后合计 {{freeResult.playerResult.totalPoints}}</view>
         </view>
       </view>
 
@@ -257,6 +338,7 @@
         </block>
         <text class="fu-total">合计 {{freeResult.fuSubtotal}}符，进位为 {{freeResult.fu}}符</text>
       </view>
+      </block>
     </view>
 
   </block>

@@ -16,10 +16,10 @@ var TEMPLATES = [
     tiles: ['2m','3m','4m','3p','4p','5p','6p','7p','8p','2s','3s','4s','6s','6s'],
     winTile: '6s',
     context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
-    answer: { han:1, fu:30, fuSubtotal:24, pointText:'1000', totalPoints:1000,
+    answer: { han:1, fu:30, fuSubtotal:22, pointText:'1000', totalPoints:1000,
       yaku:[{id:'tanyao',name:'断幺九',han:1}],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'単骑待',fu:2}],
-      explanation:'1番30符，子家荣和1000。断幺九，食下荣和+2符，単骑+2符。' }
+      fuDetails:[{name:'副底',fu:20},{name:'単骑待',fu:2}],
+      explanation:'1番30符，子家荣和1000。断幺九，副露形単骑+2符=22→进位30符。' }
   },
 
   // 1番40符：立直 + 役牌雀头 + 単骑（白雀头+2符，単骑+2符）
@@ -40,10 +40,10 @@ var TEMPLATES = [
     tiles: ['2m','3m','4m','3p','4p','5p','6s','7s','8s','5z','5z','5z','2s','2s'],
     winTile: '2s',
     context: { winMethod:'ron', isDealer:true, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'1z', riichi:false, doraCount:0 },
-    answer: { han:1, fu:30, fuSubtotal:28, pointText:'1500', totalPoints:1500,
+    answer: { han:1, fu:30, fuSubtotal:26, pointText:'1500', totalPoints:1500,
       yaku:[{id:'yakuhai',name:'役牌',han:1}],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'幺九明刻',fu:4},{name:'単骑待',fu:2}],
-      explanation:'1番30符，庄家荣和1500。白刻子是役牌1番，幺九明刻+4符。' }
+      fuDetails:[{name:'副底',fu:20},{name:'幺九明刻',fu:4},{name:'単骑待',fu:2}],
+      explanation:'1番30符，庄家荣和1500。白刻子是役牌1番，幺九明刻+4符+単骑+2符=26→进位30符。' }
   },
 
   // 2番30符：立直+平和（4顺子，非役牌雀头，両面待）→ 2000
@@ -124,10 +124,10 @@ var TEMPLATES = [
     tiles: ['2m','3m','4m','3p','4p','5p','6s','7s','8s','5z','5z','5z','3s','3s'],
     winTile: '3s',
     context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:1 },
-    answer: { han:2, fu:30, fuSubtotal:28, pointText:'2000', totalPoints:2000,
+    answer: { han:2, fu:30, fuSubtotal:26, pointText:'2000', totalPoints:2000,
       yaku:[{id:'yakuhai',name:'役牌',han:1},{id:'dora',name:'宝牌',han:1}],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'幺九明刻',fu:4},{name:'単骑待',fu:2}],
-      explanation:'2番30符，子家荣和2000。白刻子役牌+宝牌1，幺九明刻+4符+単骑+2符。' }
+      fuDetails:[{name:'副底',fu:20},{name:'幺九明刻',fu:4},{name:'単骑待',fu:2}],
+      explanation:'2番30符，子家荣和2000。白刻子役牌+宝牌1，幺九明刻+4符+単骑+2符=26→进位30符。' }
   },
 
   // ============================
@@ -176,10 +176,10 @@ var TEMPLATES = [
     tiles: ['2m','3m','4m','6m','7m','8m','9m','9m','9m','1m','1m','1m','5z','5z'],
     winTile: '5z',
     context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
-    answer: { han:2, fu:40, fuSubtotal:36, pointText:'2600', totalPoints:2600,
+    answer: { han:2, fu:40, fuSubtotal:34, pointText:'2600', totalPoints:2600,
       yaku:[{id:'honitsu',name:'混一色',han:2}],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
-      explanation:'2番40符，子家荣和2600。混一色食下降为2番，两个幺九明刻+役牌雀头+単骑=36→进位40符。' }
+      fuDetails:[{name:'副底',fu:20},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
+      explanation:'2番40符，子家荣和2600。混一色食下降为2番，两个幺九明刻+役牌雀头+単骑=34→进位40符。' }
   },
 
   // 3番40符：対々和+役牌 + 副露 + 単骑 → 5200
@@ -188,10 +188,10 @@ var TEMPLATES = [
     tiles: ['2m','2m','2m','5z','5z','5z','7s','7s','7s','8p','8p','8p','3m','3m'],
     winTile: '3m',
     context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
-    answer: { han:3, fu:40, fuSubtotal:34, pointText:'5200', totalPoints:5200,
+    answer: { han:3, fu:40, fuSubtotal:32, pointText:'5200', totalPoints:5200,
       yaku:[{id:'toitoiho',name:'对对和',han:2},{id:'yakuhai',name:'役牌',han:1}],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'中张明刻',fu:2},{name:'単骑待',fu:2}],
-      explanation:'3番40符，子家荣和5200。对对和2番+役牌白1番，4明刻+単骑=34→进位40符。' }
+      fuDetails:[{name:'副底',fu:20},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'中张明刻',fu:2},{name:'単骑待',fu:2}],
+      explanation:'3番40符，子家荣和5200。对对和2番+役牌白1番，4明刻+単骑=32→进位40符。' }
   },
 
   // 4番50符满贯：混一色门清+宝牌+幺九暗刻×2+役牌雀头+単骑 + 庄家 → 12000
@@ -279,14 +279,14 @@ var TEMPLATES = [
     tiles: ['5z','5z','5z','6z','6z','6z','7z','7z','2m','2m','2m','3p','3p','3p'],
     winTile: '7z',
     context: { winMethod:'ron', isDealer:false, isMenzen:false, hasOpenMeld:true, roundWind:'1z', seatWind:'2z', riichi:false, doraCount:0 },
-    answer: { han:6, fu:40, fuSubtotal:36, limit:{name:'跳满',basePoints:3000}, pointText:'12000', totalPoints:12000,
+    answer: { han:6, fu:40, fuSubtotal:34, limit:{name:'跳满',basePoints:3000}, pointText:'12000', totalPoints:12000,
       yaku:[
         {id:'yakuhai',name:'役牌·白',han:1},
         {id:'yakuhai',name:'役牌·发',han:1},
         {id:'toitoiho',name:'对对和',han:2},
         {id:'shousangen',name:'小三元',han:2}
       ],
-      fuDetails:[{name:'副底',fu:20},{name:'食下荣和',fu:2},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
+      fuDetails:[{name:'副底',fu:20},{name:'中张明刻',fu:2},{name:'中张明刻',fu:2},{name:'幺九明刻',fu:4},{name:'幺九明刻',fu:4},{name:'役牌雀头',fu:2},{name:'単骑待',fu:2}],
       explanation:'6番40符，子家荣和12000。对对和2番+小三元2番+役牌白1番+役牌发1番。小三元不吞两组役牌，白刻和发刻各计1番。' }
   }
 ];
@@ -447,6 +447,8 @@ function buildScorePracticeSet(count, opts) {
       difficulty: tpl.difficulty,
       tiles: tpl.tiles.slice(),
       winTile: tpl.winTile,
+      melds: tpl.melds || [],
+      concealedTiles: tpl.concealedTiles || tpl.tiles.slice(),
       context: context,
       answer: answer,
       options: options

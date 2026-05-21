@@ -123,5 +123,9 @@ Page({
 
   onGoHome() {
     wx.navigateBack();
+  },
+
+  goQuiz() {
+    wx.navigateTo({ url: '/pages/quiz/index' });
   }
 });

@@ -40,6 +40,10 @@ Page({
 
   goReview() {
     wx.navigateTo({ url: '/pages/review/index' });
+  },
+
+  goQuiz() {
+    wx.navigateTo({ url: '/pages/quiz/index' });
   }
 });
 
