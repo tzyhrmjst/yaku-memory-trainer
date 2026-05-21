@@ -5,7 +5,7 @@ var mt = require('../utils/mahjongTiles');
 var sc = require('../utils/shantenCalculator');
 var uc = require('../utils/ukeireCalculator');
 var ya = require('../utils/yakuAdvisor');
-var ha = require('../utils/handAnalyzer');
+var ha = require('../pages/analyzer/handAnalyzer');
 
 var passed = 0;
 var failed = 0;

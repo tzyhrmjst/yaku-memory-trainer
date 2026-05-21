@@ -1,5 +1,5 @@
 // 算分随机生成器测试 — 批量生成并校验
-var srg = require('../utils/scoreRandomQuestionGenerator');
+var srg = require('../pages/score-practice/scoreRandomQuestionGenerator');
 var sc = require('../utils/scoreCalculator');
 var dora = require('../utils/dora');
 

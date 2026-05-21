@@ -1,5 +1,5 @@
 var mt = require('../../utils/mahjongTiles');
-var ha = require('../../utils/handAnalyzer');
+var ha = require('./handAnalyzer');
 
 // 牌型通俗名称
 var YAKU_FRIENDLY = {

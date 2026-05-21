@@ -1,12 +1,12 @@
 // 算分随机题生成器 — 从役种生成器实时构造算分题
 // 采用"按目标役种生成 + 概率宝牌 + 模板兜底"策略
 
-var hg = require('./handGenerator');
-var builder = require('./scoreAnswerBuilder');
-var sg = require('./scoreQuestionGenerator');
-var dora = require('./dora');
-var sc = require('./scoreCalculator');
-var meldsUtil = require('./melds');
+var hg = require('../../utils/handGenerator');
+var builder = require('../../utils/scoreAnswerBuilder');
+var sg = require('../../utils/scoreQuestionGenerator');
+var dora = require('../../utils/dora');
+var sc = require('../../utils/scoreCalculator');
+var meldsUtil = require('../../utils/melds');
 
 // 难度役种池（只包含有算法生成器的役种）
 var BASIC_YAKU_POOL = [

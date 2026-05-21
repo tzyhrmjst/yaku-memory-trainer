@@ -1,6 +1,6 @@
 var mt = require('../../utils/mahjongTiles');
 var sg = require('../../utils/scoreQuestionGenerator');
-var srg = require('../../utils/scoreRandomQuestionGenerator');
+var srg = require('./scoreRandomQuestionGenerator');
 var meldsUtil = require('../../utils/melds');
 var storage = require('../../utils/storage');
 var shantenCalc = require('../../utils/shantenCalculator');

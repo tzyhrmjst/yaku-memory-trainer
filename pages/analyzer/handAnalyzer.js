@@ -1,11 +1,11 @@
 // 手牌分析器 — 统一编排入口
 // 输出合法性、向听、役种倾向、切牌建议
 
-var mt = require('./mahjongTiles');
-var sc = require('./shantenCalculator');
-var uc = require('./ukeireCalculator');
-var ya = require('./yakuAdvisor');
-var yc = require('./yakuChecker');
+var mt = require('../../utils/mahjongTiles');
+var sc = require('../../utils/shantenCalculator');
+var uc = require('../../utils/ukeireCalculator');
+var ya = require('../../utils/yakuAdvisor');
+var yc = require('../../utils/yakuChecker');
 
 // 已完成手牌的役种显示名
 var KUISAGARI_YAKU = {
