@@ -303,18 +303,17 @@ function generateRestrictedHand(pool, options) {
 
 // 通用手牌（无役种约束，用于时机型）
 function generateGenericHand() {
-  var result = generateRestrictedHand(
-    [].concat(MAN_TILES, PIN_TILES, SOU_TILES, HONOR_TILES),
-    { allowSequences: true, allowTriplets: true }
-  );
-  if (result) return result;
-
-  // 兜底
+  // 时机役只需要一副普通和牌形，避免随机出到四暗刻等役满导致题目答案被覆盖。
   return {
     tiles: ['2m','3m','4m','5p','6p','7p','3s','4s','5s','6s','7s','8s','9s','9s'],
     winTile: '9s',
-    groups: null,
-    pair: null
+    groups: [
+      makeSequence('m', 2),
+      makeSequence('p', 5),
+      makeSequence('s', 3),
+      makeSequence('s', 6)
+    ],
+    pair: makePair('9s')
   };
 }
 
@@ -536,7 +535,8 @@ function generateHonroutou() {
     allowTriplets: true
   });
   if (!result) return null;
-  result.contextHint = Math.random() < 0.5 ? '该手牌已副露' : '该手牌门前清';
+  // 全刻子混老头若门清可能同时成为四暗刻，教学题中会被役满排他盖掉。
+  result.contextHint = '该手牌已副露';
   return result;
 }
 
@@ -666,7 +666,7 @@ function generateYakuhai() {
     return {
       tiles: tiles,
       winTile: pickWinTile(groups, pair),
-      contextHint: Math.random() < 0.5 ? '该手牌已副露，含三元牌刻子' : '该手牌门前清，含三元牌刻子',
+      contextHint: '该手牌已副露，含三元牌刻子',
       groups: groups,
       pair: pair
     };
@@ -1146,6 +1146,10 @@ function generateSuuankou() {
   });
   if (!result) return null;
   result.contextHint = '该手牌门前清，自摸和牌';
+  result.winTile = pickWinTile(result.groups, result.pair, false);
+  if (result.winTile === result.pair[0]) {
+    result.winTile = result.groups[0][0];
+  }
   return result;
 }
 
@@ -1287,14 +1291,14 @@ function generateRinshanKaihou() {
 function generateSankantsu() {
   var result = generateKanHand(3);
   if (!result) return null;
-  result.contextHint = '该玩家已开3次槓';
+  result.contextHint = '该玩家已副露，已开3次槓';
   return result;
 }
 
 function generateSuukantsu() {
   var result = generateKanHand(4);
   if (!result) return null;
-  result.contextHint = '该玩家已开4次槓';
+  result.contextHint = '该玩家已副露，已开4次槓';
   return result;
 }
 

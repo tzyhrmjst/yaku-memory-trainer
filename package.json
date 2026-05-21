@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:analyzer": "node scripts/test-hand-analyzer.js",
     "test:dora": "node scripts/test-dora.js",
+    "test:questions": "node scripts/test-question-pool.js",
     "test:score": "node scripts/test-score-calculator.js",
     "test:score-random": "node scripts/test-score-random-generator.js",
     "test:rules": "node scripts/test-rule-regressions.js",

@@ -1,7 +1,7 @@
 // 题目自动生成器 — 从役种数据自动生成选择题
 const yakus = require('../data/yakus');
 const { generateHand } = require('./handGenerator');
-const { checkAllYaku } = require('./yakuChecker');
+const { checkAllYaku, normalizeYakuResult } = require('./yakuChecker');
 const meldsUtil = require('./melds');
 
 // ===== 题型1: 看牌猜役 =====
@@ -133,6 +133,10 @@ function generateTileQuestion(yaku, allYakus, variant) {
     winTile: hand.winTile || '',
     contextHint: hint
   });
+  const normalizedSatisfied = normalizeYakuResult(allSatisfied).ids;
+  if (!normalizedSatisfied.includes(yaku.id)) {
+    return null;
+  }
   allSatisfied.forEach(id => excludeIds.add(id));
 
   // 从所有役种中筛选可作为错误选项的
