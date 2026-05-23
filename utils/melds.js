@@ -1,11 +1,16 @@
 // 副露工具模块 — 统一副露数据模型、格式转换、校验、展示标签
 
 function suitOf(tile) {
-  return tile[1];
+  return normalizeTile(tile)[1];
 }
 
 function numOf(tile) {
-  return parseInt(tile[0], 10);
+  return parseInt(normalizeTile(tile)[0], 10);
+}
+
+function normalizeTile(tile) {
+  if (!tile || tile.length < 2) return tile;
+  return tile[0] === '0' ? '5' + tile[1] : tile;
 }
 
 function isHonor(tile) {
@@ -164,13 +169,13 @@ function toExplicitMelds(melds, pairTile) {
     } else if (m.type === 'pon') {
       explicitMelds.push({
         type: 'triplet',
-        tile: m.tiles[0],
+        tile: normalizeTile(m.tiles[0]),
         open: m.open !== false
       });
     } else if (m.type === 'kan' || m.type === 'ankan') {
       explicitMelds.push({
         type: 'kan',
-        tile: m.tiles[0],
+        tile: normalizeTile(m.tiles[0]),
         open: m.open !== false
       });
     }
@@ -269,5 +274,6 @@ module.exports = {
   toExplicitMelds: toExplicitMelds,
   formatMeldLabel: formatMeldLabel,
   validateMelds: validateMelds,
+  normalizeTile: normalizeTile,
   MELD_LABEL: MELD_LABEL
 };

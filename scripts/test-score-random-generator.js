@@ -11,6 +11,17 @@ function assert(condition, msg) {
   else { failed++; console.log('  FAIL: ' + msg); }
 }
 
+function collectVisibleTiles(q) {
+  if ((q.concealedTiles && q.concealedTiles.length > 0) || (q.melds && q.melds.length > 0)) {
+    var visible = (q.concealedTiles || []).slice();
+    (q.melds || []).forEach(function (meld) {
+      (meld.tiles || []).forEach(function (tile) { visible.push(tile); });
+    });
+    return visible;
+  }
+  return q.tiles.slice();
+}
+
 function testBatch(label, difficulty, count) {
   console.log('\n=== ' + label + ' (' + difficulty + ' x' + count + ') ===');
   var batchPassed = 0;
@@ -90,6 +101,10 @@ function testBatch(label, difficulty, count) {
       assert(actualDora === ctx.doraCount,
         q.id + ': dora count mismatch actual=' + actualDora + ' context=' + ctx.doraCount);
     }
+
+    var visibleDora = dora.countDora(collectVisibleTiles(q), ctx.doraIndicators || [], true);
+    assert(visibleDora === ctx.doraCount,
+      q.id + ': visible dora count mismatch visible=' + visibleDora + ' context=' + ctx.doraCount);
 
     // 8. fuDetails 非空（非役满时）
     var isYakuman = a.han >= 13;

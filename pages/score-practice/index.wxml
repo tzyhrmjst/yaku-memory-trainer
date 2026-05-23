@@ -67,8 +67,11 @@
         <view class="dora-indicators">
           <view class="dora-indicator" wx:for="{{currentQuestion.context.doraDisplays}}" wx:key="index">
             <image class="dora-indicator-img" src="{{item.src}}" mode="aspectFit" />
+            <text class="dora-arrow">→</text>
+            <image class="dora-indicator-img" src="{{item.doraSrc}}" mode="aspectFit" />
           </view>
         </view>
+        <text class="dora-strip-label">实际宝牌</text>
       </view>
 
       <!-- 答题 -->

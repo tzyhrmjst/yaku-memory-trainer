@@ -137,11 +137,12 @@ function tileImage(tile) {
 
 function buildIndicatorDisplays(indicators) {
   return (indicators || []).map(function (tile) {
+    var doraTile = nextDora(tile);
     return {
       code: tile,
       src: tileImage(tile),
-      dora: nextDora(tile),
-      doraSrc: tileImage(nextDora(tile))
+      dora: doraTile,
+      doraSrc: tileImage(doraTile)
     };
   });
 }

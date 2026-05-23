@@ -7,6 +7,8 @@ var shantenCalc = require('../../utils/shantenCalculator');
 var scoreAnswerBuilder = require('../../utils/scoreAnswerBuilder');
 
 var USE_RANDOM_SCORE_QUESTIONS = true;
+var RECENT_SCORE_QUESTION_LIMIT = 24;
+var SCORE_QUESTION_BUILD_ATTEMPTS = 12;
 
 var WINDS = [
   { code: '1z', label: '东' },
@@ -41,6 +43,7 @@ Page({
     correctCount: 0,
     stopped: false,
     sessionAccuracy: 0,
+    recentScoreQuestionKeys: [],
 
     // ===== 自由模式 =====
     allPoolTiles: [],
@@ -123,15 +126,63 @@ Page({
   // ========================
   // 出题模式
   // ========================
+  _makeScoreQuestionKey: function (q) {
+    if (!q) return '';
+    var ctx = q.context || {};
+    var answer = q.answer || {};
+    var meldKey = (q.melds || []).map(function (meld) {
+      return (meld.type || '') + ':' + (meld.tiles || []).join(',');
+    }).join('|');
+    return [
+      (q.tiles || []).join(','),
+      q.winTile || '',
+      (q.concealedTiles || []).join(','),
+      meldKey,
+      ctx.winMethod || '',
+      ctx.isDealer ? 'dealer' : 'child',
+      ctx.isMenzen ? 'menzen' : 'open',
+      ctx.roundWind || '',
+      ctx.seatWind || '',
+      ctx.riichi ? 'riichi' : 'no-riichi',
+      (ctx.doraIndicators || []).join(','),
+      answer.han || 0,
+      answer.fu || 0,
+      answer.pointText || ''
+    ].join('#');
+  },
+
+  _rememberScoreQuestion: function (q) {
+    var key = this._makeScoreQuestionKey(q);
+    if (!key) return;
+
+    var recent = (this.data.recentScoreQuestionKeys || []).filter(function (item) {
+      return item !== key;
+    });
+    recent.push(key);
+    if (recent.length > RECENT_SCORE_QUESTION_LIMIT) {
+      recent = recent.slice(recent.length - RECENT_SCORE_QUESTION_LIMIT);
+    }
+    this.setData({ recentScoreQuestionKeys: recent });
+  },
+
   _buildNextScoreQuestion: function (diff) {
     var q = null;
-    try {
-      if (USE_RANDOM_SCORE_QUESTIONS) {
-        q = srg.buildRandomScoreQuestion({ difficulty: diff, maxAttempts: 20 });
+    var recent = this.data.recentScoreQuestionKeys || [];
+
+    for (var attempt = 0; attempt < SCORE_QUESTION_BUILD_ATTEMPTS; attempt++) {
+      try {
+        if (USE_RANDOM_SCORE_QUESTIONS) {
+          q = srg.buildRandomScoreQuestion({ difficulty: diff, maxAttempts: 20 });
+        }
+      } catch (e) {
+        console.error('build random score question error:', e);
+        q = null;
       }
-    } catch (e) {
-      console.error('build random score question error:', e);
-      q = null;
+
+      if (!q) break;
+      if (recent.indexOf(this._makeScoreQuestionKey(q)) === -1) {
+        return q;
+      }
     }
 
     if (!q) {
@@ -148,9 +199,16 @@ Page({
 
   startPractice: function () {
     var diff = this.data.difficulty;
-    this.setData({ loading: true, stopped: false, totalAnswered: 0, correctCount: 0 });
+    this.setData({
+      loading: true,
+      stopped: false,
+      totalAnswered: 0,
+      correctCount: 0,
+      recentScoreQuestionKeys: []
+    });
 
     var q = this._buildNextScoreQuestion(diff);
+    this._rememberScoreQuestion(q);
     this.setData({
       loading: false,
       currentQuestion: q,
@@ -169,7 +227,7 @@ Page({
   onDifficultyChange: function (e) {
     var diff = e.currentTarget.dataset.value;
     if (diff === this.data.difficulty) return;
-    this.setData({ difficulty: diff });
+    this.setData({ difficulty: diff, recentScoreQuestionKeys: [] });
     this.startPractice();
   },
 
@@ -231,6 +289,7 @@ Page({
     this.setData({ loading: true });
 
     var q = this._buildNextScoreQuestion(diff);
+    this._rememberScoreQuestion(q);
     this.setData({
       loading: false,
       currentQuestion: q,

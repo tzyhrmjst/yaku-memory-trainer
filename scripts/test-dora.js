@@ -37,5 +37,9 @@ assertEqual(
   'generated indicators match desired dora count'
 );
 
+var displays = dora.buildIndicatorDisplays(['1m', '9s']);
+assertEqual(displays[0].dora, '2m', 'indicator display includes actual manzu dora');
+assertEqual(displays[1].dora, '1s', 'indicator display includes wrapped souzu dora');
+
 console.log('通过:', passed, '失败:', failed);
 if (failed > 0) process.exit(1);

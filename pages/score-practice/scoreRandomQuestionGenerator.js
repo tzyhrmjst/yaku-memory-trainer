@@ -121,13 +121,52 @@ function randomContext(difficulty) {
   };
 }
 
-/**
- * 尝试在手牌中替换赤五
- */
-function tryRedDora(tiles, redRate) {
-  if (randomFloat() >= redRate) return tiles.slice();
+function replaceFirstTile(tiles, from, to) {
+  var result = (tiles || []).slice();
+  var idx = result.indexOf(from);
+  if (idx >= 0) result[idx] = to;
+  return result;
+}
 
-  var result = tiles.slice();
+function replaceFirstTileInMelds(melds, from, to) {
+  var replaced = false;
+  return (melds || []).map(function (meld) {
+    var next = {};
+    var keys = Object.keys(meld);
+    for (var k = 0; k < keys.length; k++) next[keys[k]] = meld[keys[k]];
+    if (!replaced) {
+      next.tiles = replaceFirstTile(meld.tiles || [], from, to);
+      replaced = next.tiles.join('|') !== (meld.tiles || []).join('|');
+    } else {
+      next.tiles = (meld.tiles || []).slice();
+    }
+    return next;
+  });
+}
+
+function applyRedReplacementToShape(concealedTiles, melds, from, to) {
+  var nextConcealed = replaceFirstTile(concealedTiles || [], from, to);
+  if (nextConcealed.join('|') !== (concealedTiles || []).join('|')) {
+    return {
+      concealedTiles: nextConcealed,
+      melds: melds || []
+    };
+  }
+
+  return {
+    concealedTiles: concealedTiles || [],
+    melds: replaceFirstTileInMelds(melds || [], from, to)
+  };
+}
+
+/**
+ * 尝试在手牌中替换赤五，同时返回替换信息供展示结构同步。
+ */
+function applyRedDora(tiles, redRate) {
+  var original = tiles.slice();
+  if (randomFloat() >= redRate) return { tiles: original, replacement: null };
+
+  var result = original.slice();
   var redCandidates = [];
 
   for (var i = 0; i < result.length; i++) {
@@ -137,12 +176,16 @@ function tryRedDora(tiles, redRate) {
     }
   }
 
-  if (redCandidates.length === 0) return result;
+  if (redCandidates.length === 0) return { tiles: result, replacement: null };
 
   var idx = redCandidates[randomInt(0, redCandidates.length - 1)];
   var tile = result[idx];
-  result[idx] = '0' + tile[1];
-  return result;
+  var redTile = '0' + tile[1];
+  result[idx] = redTile;
+  return {
+    tiles: result,
+    replacement: { from: tile, to: redTile }
+  };
 }
 
 /**
@@ -265,7 +308,23 @@ function makeOptions(answer, context) {
 function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, concealedTiles) {
   // 尝试赤五替换
   var redRate = RED_DORA_RATE[difficulty] || 0;
-  var tiles = tryRedDora(handTiles, redRate);
+  var redResult = applyRedDora(handTiles, redRate);
+  var tiles = redResult.tiles;
+  var displayShape = {
+    concealedTiles: concealedTiles || tiles.slice(),
+    melds: melds || []
+  };
+  if (redResult.replacement) {
+    displayShape = applyRedReplacementToShape(
+      displayShape.concealedTiles,
+      displayShape.melds,
+      redResult.replacement.from,
+      redResult.replacement.to
+    );
+    if (winTile === redResult.replacement.from) {
+      winTile = redResult.replacement.to;
+    }
+  }
 
   // 宝牌：分布已包含0枚概率，直接从分布采样
   var doraConfig = DORA_PROB[difficulty] || DORA_PROB.basic;
@@ -285,8 +344,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
   for (var ki = 0; ki < keys.length; ki++) { ctx[keys[ki]] = context[keys[ki]]; }
   ctx.doraIndicators = doraIndicators;
   ctx.winTile = winTile;
-  ctx.melds = melds || [];
-  ctx.concealedTiles = concealedTiles || tiles.slice();
+  ctx.melds = displayShape.melds;
+  ctx.concealedTiles = displayShape.concealedTiles;
 
   var result = builder.buildAnswer(tiles, ctx);
 
@@ -322,8 +381,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
     difficulty: difficulty,
     tiles: tiles,
     winTile: winTile,
-    melds: melds || [],
-    concealedTiles: concealedTiles || tiles.slice(),
+    melds: displayShape.melds,
+    concealedTiles: displayShape.concealedTiles,
     context: {
       winMethod: context.winMethod,
       isDealer: context.isDealer,
