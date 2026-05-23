@@ -304,17 +304,31 @@ function generateRestrictedHand(pool, options) {
 // 通用手牌（无役种约束，用于时机型）
 function generateGenericHand() {
   // 时机役只需要一副普通和牌形，避免随机出到四暗刻等役满导致题目答案被覆盖。
-  return {
-    tiles: ['2m','3m','4m','5p','6p','7p','3s','4s','5s','6s','7s','8s','9s','9s'],
-    winTile: '9s',
-    groups: [
-      makeSequence('m', 2),
-      makeSequence('p', 5),
-      makeSequence('s', 3),
-      makeSequence('s', 6)
-    ],
-    pair: makePair('9s')
-  };
+  for (var attempt = 0; attempt < 30; attempt++) {
+    var usage = createUsageTracker();
+    var groups = [];
+
+    while (groups.length < 4) {
+      var seq = randomSequence(SUITS, null, usage);
+      if (!seq) break;
+      groups.push(seq);
+    }
+
+    if (groups.length < 4) continue;
+
+    var pairPool = [].concat(MAN_TILES, PIN_TILES, SOU_TILES);
+    var pair = randomPair(pairPool, usage);
+    if (!pair) continue;
+
+    return {
+      tiles: buildHand(groups, pair),
+      winTile: pickWinTile(groups, pair),
+      groups: groups,
+      pair: pair
+    };
+  }
+
+  return null;
 }
 
 // =========================================================================

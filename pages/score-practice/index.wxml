@@ -67,11 +67,25 @@
         <view class="dora-indicators">
           <view class="dora-indicator" wx:for="{{currentQuestion.context.doraDisplays}}" wx:key="index">
             <image class="dora-indicator-img" src="{{item.src}}" mode="aspectFit" />
+            <block wx:if="{{answered}}">
+              <text class="dora-arrow">→</text>
+              <image class="dora-indicator-img" src="{{item.doraSrc}}" mode="aspectFit" />
+            </block>
+          </view>
+        </view>
+        <text class="dora-strip-label" wx:if="{{answered}}">实际宝牌</text>
+      </view>
+
+      <view class="dora-strip" wx:if="{{answered && currentQuestion.context.uraDoraDisplays.length > 0}}">
+        <text class="dora-strip-label">里宝牌指示牌</text>
+        <view class="dora-indicators">
+          <view class="dora-indicator" wx:for="{{currentQuestion.context.uraDoraDisplays}}" wx:key="index">
+            <image class="dora-indicator-img" src="{{item.src}}" mode="aspectFit" />
             <text class="dora-arrow">→</text>
             <image class="dora-indicator-img" src="{{item.doraSrc}}" mode="aspectFit" />
           </view>
         </view>
-        <text class="dora-strip-label">实际宝牌</text>
+        <text class="dora-strip-label">实际里宝牌</text>
       </view>
 
       <!-- 答题 -->
@@ -102,7 +116,7 @@
           </view>
         </view>
         <view class="submit-row">
-          <view class="submit-btn {{!answered && (!selectedHan || !selectedFu || !selectedPoint) ? 'submit-btn-disabled' : ''}}"
+          <view class="submit-btn {{!answered && (selectedHan === null || selectedFu === null || !selectedPoint) ? 'submit-btn-disabled' : ''}}"
             bindtap="onPrimaryAction">{{answered ? '下一题' : '提交答案'}}</view>
         </view>
       </view>
@@ -165,7 +179,7 @@
     <view class="pool-section">
       <view class="pool-grid">
         <view wx:for="{{allPoolTiles}}" wx:key="code"
-          class="pool-tile {{item.count >= 4 ? 'pool-tile-full' : ''}} {{selectedCount >= 14 && item.count === 0 ? 'pool-tile-locked' : ''}}"
+          class="pool-tile {{item.full ? 'pool-tile-full' : ''}} {{selectedCount >= 14 && item.count === 0 ? 'pool-tile-locked' : ''}}"
           data-tile="{{item.code}}" bindtap="onFreeAddTile">
           <image class="pool-tile-img" src="{{item.src}}" mode="aspectFit" />
           <view class="pool-tile-badge" wx:if="{{item.count > 0}}">{{item.count}}</view>
@@ -265,6 +279,14 @@
           <view class="dora-btn" data-value="{{freeDoraCount - 1}}" bindtap="onFreeDoraCountChange" wx:if="{{freeDoraCount > 0}}">−</view>
           <text class="dora-val">{{freeDoraCount}}</text>
           <view class="dora-btn" data-value="{{freeDoraCount + 1}}" bindtap="onFreeDoraCountChange" wx:if="{{freeDoraCount < 10}}">+</view>
+        </view>
+      </view>
+      <view class="context-row">
+        <text class="context-label">里宝牌数</text>
+        <view class="dora-stepper {{freeRiichi ? '' : 'dora-stepper-disabled'}}">
+          <view class="dora-btn" data-value="{{freeUraDoraCount - 1}}" bindtap="onFreeUraDoraCountChange" wx:if="{{freeUraDoraCount > 0}}">−</view>
+          <text class="dora-val">{{freeUraDoraCount}}</text>
+          <view class="dora-btn" data-value="{{freeUraDoraCount + 1}}" bindtap="onFreeUraDoraCountChange" wx:if="{{freeUraDoraCount < 10}}">+</view>
         </view>
       </view>
       <view class="context-row">

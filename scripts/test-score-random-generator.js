@@ -69,7 +69,7 @@ function testBatch(label, difficulty, count) {
     }
 
     // 3. 至少有一个非宝牌役 (baseYakuHan > 0)
-    assert(a.yaku.filter(function (y) { return y.id !== 'dora'; }).length > 0,
+    assert(a.yaku.filter(function (y) { return y.id !== 'dora' && y.id !== 'ura_dora'; }).length > 0,
       q.id + ': no non-dora yaku');
 
     // 4. answer.han = 非宝牌役番 + 宝牌番
@@ -94,15 +94,22 @@ function testBatch(label, difficulty, count) {
       assert(ctx.doraDisplays.length === ctx.doraIndicators.length,
         q.id + ': doraDisplays=' + ctx.doraDisplays.length + ' !== indicators=' + ctx.doraIndicators.length);
     }
-
-    // 7. 宝牌计数一致性
-    if (ctx.doraIndicators && ctx.doraIndicators.length > 0) {
-      var actualDora = dora.countDora(q.tiles, ctx.doraIndicators, true);
-      assert(actualDora === ctx.doraCount,
-        q.id + ': dora count mismatch actual=' + actualDora + ' context=' + ctx.doraCount);
+    if (ctx.uraDoraDisplays) {
+      assert(ctx.uraDoraDisplays.length === ctx.uraDoraIndicators.length,
+        q.id + ': uraDoraDisplays=' + ctx.uraDoraDisplays.length + ' !== indicators=' + ctx.uraDoraIndicators.length);
     }
 
-    var visibleDora = dora.countDora(collectVisibleTiles(q), ctx.doraIndicators || [], true);
+    // 7. 宝牌计数一致性
+    var actualDora = dora.countDora(q.tiles, ctx.doraIndicators || [], true);
+    if (ctx.uraDoraIndicators && ctx.uraDoraIndicators.length > 0) {
+      actualDora += dora.countDora(q.tiles, ctx.uraDoraIndicators, false);
+      assert(ctx.riichi, q.id + ': ura dora appears without riichi');
+    }
+    assert(actualDora === ctx.doraCount,
+      q.id + ': dora count mismatch actual=' + actualDora + ' context=' + ctx.doraCount);
+
+    var visibleDora = dora.countDora(collectVisibleTiles(q), ctx.doraIndicators || [], true) +
+      dora.countDora(collectVisibleTiles(q), ctx.uraDoraIndicators || [], false);
     assert(visibleDora === ctx.doraCount,
       q.id + ': visible dora count mismatch visible=' + visibleDora + ' context=' + ctx.doraCount);
 

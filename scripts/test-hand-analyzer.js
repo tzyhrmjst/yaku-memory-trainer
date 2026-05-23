@@ -57,6 +57,9 @@ test('tileIndex maps correctly', function () {
   assertEqual(mt.tileIndex('1s'), 18);
   assertEqual(mt.tileIndex('1z'), 27);
   assertEqual(mt.tileIndex('7z'), 33);
+  assertEqual(mt.tileIndex('0m'), mt.tileIndex('5m'));
+  assertEqual(mt.tileIndex('0p'), mt.tileIndex('5p'));
+  assertEqual(mt.tileIndex('0s'), mt.tileIndex('5s'));
 });
 
 test('sortTiles sorts correctly', function () {
@@ -93,6 +96,17 @@ test('validateTiles rejects >4 copies', function () {
   );
 });
 
+test('validateTiles counts red five with normal five', function () {
+  var tiles = ['5m', '5m', '5m', '5m', '0m', '2m', '3m', '4m', '6m', '7m', '8m', '1p', '2p', '3p'];
+  var errors = mt.validateTiles(tiles);
+  assertEqual(
+    errors.some(function (e) {
+      return e.indexOf('不能超过 4 张') >= 0;
+    }),
+    true,
+  );
+});
+
 test('validateTiles rejects unknown encoding', function () {
   var errors = mt.validateTiles(['1m', '2m', '3m', '4m', '5m', '6m', '7m', '8m', '9m', '1p', '2p', '3p', '4p', '東']);
   assertEqual(
@@ -109,6 +123,7 @@ test('tileDisplay returns Chinese name for honors', function () {
   assertEqual(mt.tileDisplay('3m'), '三万');
   assertEqual(mt.tileDisplay('5p'), '五筒');
   assertEqual(mt.tileDisplay('9s'), '九索');
+  assertEqual(mt.tileDisplay('0s'), '赤五索');
 });
 
 test('isOrphan identifies orphans correctly', function () {
@@ -125,7 +140,8 @@ test('buildTileGroups returns 4 groups', function () {
   assertEqual(groups.length, 4);
   assertEqual(groups[0].title, '万子');
   assertEqual(groups[3].title, '字牌');
-  assertEqual(groups[0].tiles.length, 9);
+  assertEqual(groups[0].tiles.length, 10);
+  assertEqual(groups[0].tiles.some(function (tile) { return tile.code === '0m'; }), true);
   assertEqual(groups[3].tiles.length, 7);
 });
 

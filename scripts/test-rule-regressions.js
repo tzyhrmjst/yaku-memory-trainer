@@ -3,6 +3,8 @@ var yc = require('../utils/yakuChecker');
 var fc = require('../utils/fuCalculator');
 var sc = require('../utils/scoreCalculator');
 var builder = require('../utils/scoreAnswerBuilder');
+var scoreQuestionGenerator = require('../utils/scoreQuestionGenerator');
+var scoreRandomQuestionGenerator = require('../pages/score-practice/scoreRandomQuestionGenerator');
 
 var passed = 0;
 var failed = 0;
@@ -140,6 +142,8 @@ var fu3 = fc.calculateFu(
 );
 assert('自摸保留+2符',
   fu3.fuDetails.some(function(d) { return d.name === '自摸' && d.fu === 2; }));
+assert('自摸单骑也含等待形+2符',
+  fu3.fuDetails.some(function(d) { return d.name.indexOf('骑待') !== -1 && d.fu === 2; }));
 
 // =========================================================================
 // 4. 符数规则 — 副露平和形荣和最低 30 符
@@ -198,8 +202,8 @@ var fuKanchan = fc.calculateFu(
   ['4m','5m','6m','1p','2p','3p','4p','5p','6p','7p','8p','9p','1s','1s'],
   { winMethod: 'ron', winTile: '5m', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
 );
-assert('坎张荣和含+2符',
-  fuKanchan.fuDetails.some(function(d) { return d.name.indexOf('坎张待') !== -1 && d.fu === 2; }));
+assert('嵌张荣和含+2符',
+  fuKanchan.fuDetails.some(function(d) { return d.name.indexOf('嵌张待') !== -1 && d.fu === 2; }));
 
 // 边张待 +2 符 — 1m2m3m 成顺子，和了牌是1m=23等1的辺張
 var fuPenchan = fc.calculateFu(
@@ -412,6 +416,46 @@ var ansHaitei = builder.buildAnswer(
 );
 assert('自由算分海底透传到builder',
   ansHaitei.valid && ansHaitei.answer.yaku.some(function(y) { return y.id === 'haitei'; }));
+
+// =========================================================================
+// 13. 里宝牌只在立直时计入
+// =========================================================================
+console.log('\n=== 13. 里宝牌规则 ===');
+
+var uraTiles = ['2m','3m','4m','3p','4p','5p','4s','5s','6s','6m','7m','8m','5z','5z'];
+var ansUraRiichi = builder.buildAnswer(
+  uraTiles,
+  { winMethod: 'ron', isDealer: false, isMenzen: true, hasOpenMeld: false,
+    roundWind: '1z', seatWind: '2z', riichi: true,
+    doraIndicators: [], uraDoraIndicators: ['7z'], winTile: '5z' }
+);
+assert('立直时里宝牌计入番数',
+  ansUraRiichi.valid && ansUraRiichi.answer.yaku.some(function(y) {
+    return y.id === 'ura_dora' && y.han === 2;
+  }));
+
+var ansUraNoRiichi = builder.buildAnswer(
+  uraTiles,
+  { winMethod: 'tsumo', isDealer: false, isMenzen: true, hasOpenMeld: false,
+    roundWind: '1z', seatWind: '2z', riichi: false, haitei: true,
+    doraIndicators: [], uraDoraIndicators: ['7z'], winTile: '5z' }
+);
+assert('未立直时忽略里宝牌',
+  ansUraNoRiichi.valid && !ansUraNoRiichi.answer.yaku.some(function(y) {
+    return y.id === 'ura_dora';
+  }));
+
+// =========================================================================
+// 14. 役满题 0 符选项
+// =========================================================================
+console.log('\n=== 14. 役满题 0符选项 ===');
+
+var templateFuOptions = scoreQuestionGenerator.__test__.makeFuOptions(0);
+var randomFuOptions = scoreRandomQuestionGenerator.__test__.makeFuOptions(0);
+assert('模板算分题役满应包含0符选项',
+  templateFuOptions.indexOf(0) !== -1);
+assert('随机算分题役满应包含0符选项',
+  randomFuOptions.indexOf(0) !== -1);
 
 // =========================================================================
 // 结果汇总

@@ -66,7 +66,7 @@ function buildContextHint(context) {
 /**
  * 从 tiles + context 构建完整答案
  * @param {string[]} tiles - 14张手牌（可含 0m/0p/0s 赤五）
- * @param {Object} context - { winMethod, isDealer, isMenzen, hasOpenMeld, roundWind, seatWind, riichi, doraIndicators, doraCountOverride, winTile }
+ * @param {Object} context - { winMethod, isDealer, isMenzen, hasOpenMeld, roundWind, seatWind, riichi, doraIndicators, uraDoraIndicators, doraCountOverride, uraDoraCountOverride, winTile }
  * @returns {{ valid: boolean, answer?: Object, error?: string }}
  */
 function buildAnswer(tiles, context) {
@@ -79,6 +79,7 @@ function buildAnswer(tiles, context) {
   var seatWind = context.seatWind || '2z';
   var riichi = context.riichi || false;
   var doraIndicators = context.doraIndicators || [];
+  var uraDoraIndicators = riichi ? (context.uraDoraIndicators || []) : [];
   var winTile = context.winTile || '';
 
   // 1. 归一化牌（赤五 → 普通五）用于判役和算符
@@ -132,17 +133,29 @@ function buildAnswer(tiles, context) {
   });
 
   // 6. 宝牌统计 — 役满时不加宝牌
-  var doraCount = 0;
+  var normalDoraCount = 0;
+  var uraDoraCount = 0;
   if (!isYakuman) {
     if (typeof context.doraCountOverride === 'number') {
-      doraCount = context.doraCountOverride;
+      normalDoraCount = context.doraCountOverride;
     } else {
-      doraCount = dora.countDora(tiles, doraIndicators, true);
+      normalDoraCount = dora.countDora(tiles, doraIndicators, true);
     }
-    if (doraCount > 0) {
-      yakuList.push({ id: 'dora', name: '宝牌', han: doraCount });
+    if (riichi) {
+      if (typeof context.uraDoraCountOverride === 'number') {
+        uraDoraCount = context.uraDoraCountOverride;
+      } else {
+        uraDoraCount = dora.countDora(tiles, uraDoraIndicators, false);
+      }
+    }
+    if (normalDoraCount > 0) {
+      yakuList.push({ id: 'dora', name: '宝牌', han: normalDoraCount });
+    }
+    if (uraDoraCount > 0) {
+      yakuList.push({ id: 'ura_dora', name: '里宝牌', han: uraDoraCount });
     }
   }
+  var doraCount = normalDoraCount + uraDoraCount;
   var totalHan = baseYakuHan + doraCount;
 
   // 7. 验证必须有非宝牌役
@@ -205,6 +218,7 @@ function buildAnswer(tiles, context) {
 
   // 10. doraDisplays
   var doraDisplays = dora.buildIndicatorDisplays(doraIndicators);
+  var uraDoraDisplays = dora.buildIndicatorDisplays(uraDoraIndicators);
 
   return {
     valid: true,
@@ -221,9 +235,12 @@ function buildAnswer(tiles, context) {
       explanation: explanation,
       baseYakuHan: baseYakuHan,
       doraCount: doraCount,
+      normalDoraCount: normalDoraCount,
+      uraDoraCount: uraDoraCount,
       yakumanCount: yakumanCount
     },
-    doraDisplays: doraDisplays
+    doraDisplays: doraDisplays,
+    uraDoraDisplays: uraDoraDisplays
   };
 }
 

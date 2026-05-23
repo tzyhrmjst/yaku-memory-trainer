@@ -49,6 +49,12 @@ var RED_DORA_RATE = {
   mixed: 0.25
 };
 
+var URA_DORA_PROB = {
+  basic: { appearRate: 0.20, dist: [0.80, 0.20], maxDora: 1 },
+  advanced: { appearRate: 0.35, dist: [0.65, 0.25, 0.10], maxDora: 2 },
+  mixed: { appearRate: 0.45, dist: [0.55, 0.25, 0.15, 0.05], maxDora: 3 }
+};
+
 function randomFloat() {
   return Math.random();
 }
@@ -194,7 +200,12 @@ function applyRedDora(tiles, redRate) {
  */
 function generateIndicators(tiles, desiredCount) {
   if (desiredCount <= 0) return [];
-  return dora.makeIndicatorsForCount(tiles, desiredCount);
+  return dora.makeSingleIndicatorForCount(tiles, desiredCount);
+}
+
+function generateUraIndicators(tiles, desiredCount) {
+  if (desiredCount <= 0) return [];
+  return dora.makeSingleIndicatorForCount(tiles, desiredCount, false);
 }
 
 function makeHanOptions(correctHan) {
@@ -216,7 +227,7 @@ function makeHanOptions(correctHan) {
 
 function makeFuOptions(correctFu) {
   var pool = [20, 25, 30, 40, 50];
-  if (correctFu > 0 && pool.indexOf(correctFu) === -1) pool.push(correctFu);
+  if (pool.indexOf(correctFu) === -1) pool.push(correctFu);
   return pool.sort(function (a, b) { return a - b; });
 }
 
@@ -331,6 +342,8 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
   var doraCount = pickDoraCount(doraConfig.dist);
   doraCount = Math.min(doraCount, doraConfig.maxDora);
   var doraIndicators = [];
+  var uraDoraCount = 0;
+  var uraDoraIndicators = [];
 
   if (doraCount > 0) {
     doraIndicators = generateIndicators(tiles, doraCount);
@@ -338,11 +351,24 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
     doraCount = dora.countDora(tiles, doraIndicators, true);
   }
 
+  if (context.riichi) {
+    var uraConfig = URA_DORA_PROB[difficulty] || URA_DORA_PROB.basic;
+    if (randomFloat() < uraConfig.appearRate) {
+      uraDoraCount = pickDoraCount(uraConfig.dist);
+      uraDoraCount = Math.min(uraDoraCount, uraConfig.maxDora);
+      if (uraDoraCount > 0) {
+        uraDoraIndicators = generateUraIndicators(tiles, uraDoraCount);
+        uraDoraCount = dora.countDora(tiles, uraDoraIndicators, false);
+      }
+    }
+  }
+
   // 构建答案
   var ctx = {};
   var keys = Object.keys(context);
   for (var ki = 0; ki < keys.length; ki++) { ctx[keys[ki]] = context[keys[ki]]; }
   ctx.doraIndicators = doraIndicators;
+  ctx.uraDoraIndicators = uraDoraIndicators;
   ctx.winTile = winTile;
   ctx.melds = displayShape.melds;
   ctx.concealedTiles = displayShape.concealedTiles;
@@ -368,7 +394,9 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
   if (difficulty === 'advanced' && answer.han >= 13) return null;
 
   // 过滤 yaku 过多导致解释过长的（入门最多4个役种，进阶6个）
-  var yakuCount = answer.yaku.filter(function (y) { return y.id !== 'dora'; }).length;
+  var yakuCount = answer.yaku.filter(function (y) {
+    return y.id !== 'dora' && y.id !== 'ura_dora';
+  }).length;
   if (difficulty === 'basic' && yakuCount > 4) return null;
   if (difficulty === 'advanced' && yakuCount > 6) return null;
 
@@ -394,8 +422,12 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
       seatWindText: windName(context.seatWind) + '家',
       riichi: context.riichi,
       doraCount: answer.doraCount,
+      normalDoraCount: answer.normalDoraCount,
+      uraDoraCount: answer.uraDoraCount,
       doraIndicators: doraIndicators,
-      doraDisplays: result.doraDisplays
+      doraDisplays: result.doraDisplays,
+      uraDoraIndicators: uraDoraIndicators,
+      uraDoraDisplays: result.uraDoraDisplays
     },
     answer: {
       han: answer.han,
@@ -520,5 +552,8 @@ module.exports = {
   // 暴露配置便于测试
   BASIC_YAKU_POOL: BASIC_YAKU_POOL,
   ADVANCED_YAKU_POOL: ADVANCED_YAKU_POOL,
-  MIXED_YAKU_POOL: MIXED_YAKU_POOL
+  MIXED_YAKU_POOL: MIXED_YAKU_POOL,
+  __test__: {
+    makeFuOptions: makeFuOptions
+  }
 };

@@ -26,7 +26,7 @@ const yakus = [
     ],
     exampleTiles: ['2m', '3m', '4m', '5m', '5m', '5m', '6m', '7m', '8m', '4p', '5p', '6p', '2s', '2s'],
     winTile: '2s',
-    contextHint: '该手牌已副露（食替）'
+    contextHint: '该手牌已副露'
   },
 
   {
@@ -762,7 +762,7 @@ const yakus = [
     nameJa: '国士無双十三面待ち（コクシムソウジュウサンメンマチ）',
     han: 26,
     category: 'yakuman',
-    description: '国士无双以13面听形式（已有13种幺九牌各1张，听14种中的任意1张）和牌。双倍役满。',
+    description: '国士无双以13面听形式（已有13种幺九牌各1张，听13种幺九牌中的任意1张）和牌。双倍役满。',
     facts: { winMethods: ['tsumo', 'ron'], requiresMenzen: true, kuisagari: false },
     conditions: [
       '国士无双的所有条件必须满足',
@@ -803,7 +803,7 @@ const yakus = [
     name: '流局满贯',
     nameJa: '流し満貫（ナガシマンガン）',
     han: 5,
-    category: 'yakuman',
+    category: 'advanced',
     description: '荒牌流局时，自家打出的牌全是幺九牌且一张都没有被别家鸣牌（吃/碰/槓）。',
     facts: { winMethods: [], requiresMenzen: true, kuisagari: false },
     conditions: [

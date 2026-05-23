@@ -100,7 +100,7 @@ function findIndicatorPlan(candidates, desired, idx, current, best) {
   if (best.plan && current.length >= best.plan.length) return;
 
   var candidate = candidates[idx];
-  var maxRepeat = Math.min(4, Math.floor(desired / candidate.count));
+  var maxRepeat = Math.min(1, Math.floor(desired / candidate.count));
   for (var repeat = maxRepeat; repeat >= 0; repeat--) {
     var next = current.slice();
     for (var i = 0; i < repeat; i++) {
@@ -110,9 +110,11 @@ function findIndicatorPlan(candidates, desired, idx, current, best) {
   }
 }
 
-function makeIndicatorsForCount(tiles, desiredCount) {
-  var redCount = tiles.filter(isRedFive).length;
-  desiredCount -= redCount;
+function makeIndicatorsForCount(tiles, desiredCount, includeRed) {
+  if (includeRed !== false) {
+    var redCount = tiles.filter(isRedFive).length;
+    desiredCount -= redCount;
+  }
   if (!desiredCount || desiredCount <= 0) return [];
 
   var counts = buildCounts(tiles);
@@ -129,6 +131,33 @@ function makeIndicatorsForCount(tiles, desiredCount) {
   var best = { plan: null };
   findIndicatorPlan(candidates, desiredCount, 0, [], best);
   return best.plan || [];
+}
+
+function makeSingleIndicatorForCount(tiles, desiredCount, includeRed) {
+  if (includeRed !== false) {
+    var redCount = tiles.filter(isRedFive).length;
+    desiredCount -= redCount;
+  }
+  if (!desiredCount || desiredCount <= 0) return [];
+
+  var counts = buildCounts(tiles);
+  var candidates = Object.keys(counts)
+    .map(function (tile) {
+      return { tile: tile, count: counts[tile], indicator: indicatorForDora(tile) };
+    })
+    .filter(function (candidate) { return candidate.count > 0; })
+    .sort(function (a, b) {
+      var aOver = a.count > desiredCount;
+      var bOver = b.count > desiredCount;
+      if (aOver !== bOver) return aOver ? 1 : -1;
+      var aDistance = Math.abs(desiredCount - a.count);
+      var bDistance = Math.abs(desiredCount - b.count);
+      if (aDistance !== bDistance) return aDistance - bDistance;
+      if (b.count !== a.count) return b.count - a.count;
+      return a.tile < b.tile ? -1 : 1;
+    });
+
+  return candidates.length > 0 ? [candidates[0].indicator] : [];
 }
 
 function tileImage(tile) {
@@ -154,5 +183,6 @@ module.exports = {
   indicatorForDora: indicatorForDora,
   countDora: countDora,
   makeIndicatorsForCount: makeIndicatorsForCount,
+  makeSingleIndicatorForCount: makeSingleIndicatorForCount,
   buildIndicatorDisplays: buildIndicatorDisplays
 };

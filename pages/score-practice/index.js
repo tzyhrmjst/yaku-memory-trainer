@@ -8,7 +8,8 @@ var scoreAnswerBuilder = require('../../utils/scoreAnswerBuilder');
 
 var USE_RANDOM_SCORE_QUESTIONS = true;
 var RECENT_SCORE_QUESTION_LIMIT = 24;
-var SCORE_QUESTION_BUILD_ATTEMPTS = 12;
+var SCORE_QUESTION_BUILD_ATTEMPTS = 60;
+var SCORE_TEMPLATE_FALLBACK_ATTEMPTS = 40;
 
 var WINDS = [
   { code: '1z', label: '东' },
@@ -62,6 +63,7 @@ Page({
     freeHasOpenMeld: false,
     freeRiichi: false,
     freeDoraCount: 0,
+    freeUraDoraCount: 0,
     freeResult: null,
     freeCalculated: false,
     // 副露编辑器
@@ -129,7 +131,6 @@ Page({
   _makeScoreQuestionKey: function (q) {
     if (!q) return '';
     var ctx = q.context || {};
-    var answer = q.answer || {};
     var meldKey = (q.melds || []).map(function (meld) {
       return (meld.type || '') + ':' + (meld.tiles || []).join(',');
     }).join('|');
@@ -143,11 +144,7 @@ Page({
       ctx.isMenzen ? 'menzen' : 'open',
       ctx.roundWind || '',
       ctx.seatWind || '',
-      ctx.riichi ? 'riichi' : 'no-riichi',
-      (ctx.doraIndicators || []).join(','),
-      answer.han || 0,
-      answer.fu || 0,
-      answer.pointText || ''
+      ctx.riichi ? 'riichi' : 'no-riichi'
     ].join('#');
   },
 
@@ -187,8 +184,13 @@ Page({
 
     if (!q) {
       try {
-        var fallback = sg.buildScorePracticeSet(1, { difficulty: diff });
-        q = fallback[0];
+        for (var fallbackAttempt = 0; fallbackAttempt < SCORE_TEMPLATE_FALLBACK_ATTEMPTS; fallbackAttempt++) {
+          var fallback = sg.buildScorePracticeSet(1, { difficulty: diff });
+          q = fallback[0];
+          if (!q || recent.indexOf(this._makeScoreQuestionKey(q)) === -1) {
+            break;
+          }
+        }
       } catch (e2) {
         console.error('build fallback score question error:', e2);
       }
@@ -248,7 +250,7 @@ Page({
 
   onSubmit: function () {
     if (!this.data.currentQuestion || this.data.answered) return;
-    if (!this.data.selectedHan || !this.data.selectedFu || !this.data.selectedPoint) return;
+    if (this.data.selectedHan === null || this.data.selectedFu === null || !this.data.selectedPoint) return;
 
     var question = this.data.currentQuestion;
     var answer = question.answer;
@@ -322,8 +324,11 @@ Page({
   onFreeAddTile: function (e) {
     var tile = e.currentTarget.dataset.tile;
     var selectedTiles = this.data.selectedTiles;
+    var normalizedTile = mt.normalizeTile(tile);
 
-    var count = selectedTiles.filter(function (t) { return t === tile; }).length;
+    var count = selectedTiles.filter(function (t) {
+      return mt.normalizeTile(t) === normalizedTile;
+    }).length;
     if (count >= 4) {
       wx.showToast({ title: '同一种牌最多 4 张', icon: 'none', duration: 1500 });
       return;
@@ -396,8 +401,16 @@ Page({
 
   _updateFreePoolCounts: function (tiles) {
     var counts = this._buildCountMap(tiles);
+    var normalizedCounts = {};
+    tiles.forEach(function (tile) {
+      var normalized = mt.normalizeTile(tile);
+      normalizedCounts[normalized] = (normalizedCounts[normalized] || 0) + 1;
+    });
     var poolTiles = this.data.allPoolTiles;
-    poolTiles.forEach(function (tile) { tile.count = counts[tile.code] || 0; });
+    poolTiles.forEach(function (tile) {
+      tile.count = counts[tile.code] || 0;
+      tile.full = (normalizedCounts[mt.normalizeTile(tile.code)] || 0) >= 4;
+    });
     this.setData({ allPoolTiles: poolTiles });
   },
 
@@ -613,6 +626,7 @@ Page({
     var data = { freeHasOpenMeld: open, freeCalculated: false };
     if (open) {
       data.freeRiichi = false;
+      data.freeUraDoraCount = 0;
       data.freeEventYaku = this._normalizeEventYaku(this.data.freeEventYaku, this.data.freeWinMethod, true);
     } else {
       data.freeMelds = [];
@@ -628,17 +642,29 @@ Page({
   onFreeRiichiChange: function (e) {
     if (this.data.freeHasOpenMeld && e.detail.value) {
       wx.showToast({ title: '副露后不能立直', icon: 'none', duration: 1500 });
-      this.setData({ freeRiichi: false, freeCalculated: false });
+      this.setData({ freeRiichi: false, freeUraDoraCount: 0, freeCalculated: false });
       return;
     }
     var eventYaku = this._normalizeEventYaku(this.data.freeEventYaku, this.data.freeWinMethod, this.data.freeHasOpenMeld, e.detail.value);
-    this.setData({ freeRiichi: e.detail.value, freeEventYaku: eventYaku, freeCalculated: false });
+    var data = { freeRiichi: e.detail.value, freeEventYaku: eventYaku, freeCalculated: false };
+    if (!e.detail.value) data.freeUraDoraCount = 0;
+    this.setData(data);
   },
   onFreeDoraCountChange: function (e) {
     var value = Number(e.currentTarget.dataset.value);
     if (Number.isNaN(value)) value = 0;
     value = Math.max(0, Math.min(10, value));
     this.setData({ freeDoraCount: value, freeCalculated: false });
+  },
+  onFreeUraDoraCountChange: function (e) {
+    if (!this.data.freeRiichi) {
+      wx.showToast({ title: '里宝牌需要立直', icon: 'none', duration: 1500 });
+      return;
+    }
+    var value = Number(e.currentTarget.dataset.value);
+    if (Number.isNaN(value)) value = 0;
+    value = Math.max(0, Math.min(10, value));
+    this.setData({ freeUraDoraCount: value, freeCalculated: false });
   },
   onFreeCounterChange: function (e) {
     var type = e.currentTarget.dataset.type;
@@ -658,6 +684,12 @@ Page({
     var keys = Object.keys(current);
     for (var i = 0; i < keys.length; i++) next[keys[i]] = current[keys[i]];
     next[key] = !next[key];
+    if (next[key]) {
+      if (key === 'rinshan') next.haitei = false;
+      if (key === 'haitei') next.rinshan = false;
+      if (key === 'chankan') next.houtei = false;
+      if (key === 'houtei') next.chankan = false;
+    }
     next = this._normalizeEventYaku(next, this.data.freeWinMethod, this.data.freeHasOpenMeld, this.data.freeRiichi);
     this.setData({ freeEventYaku: next, freeCalculated: false });
   },
@@ -688,6 +720,8 @@ Page({
     normalized.chankan = !!source.chankan && method === 'ron';
     normalized.haitei = !!source.haitei && method === 'tsumo';
     normalized.houtei = !!source.houtei && method === 'ron';
+    if (normalized.rinshan && normalized.haitei) normalized.haitei = false;
+    if (normalized.chankan && normalized.houtei) normalized.houtei = false;
     return normalized;
   },
 
@@ -785,6 +819,8 @@ Page({
       houtei: eventYaku.houtei,
       doraIndicators: [],
       doraCountOverride: this.data.freeDoraCount,
+      uraDoraIndicators: [],
+      uraDoraCountOverride: this.data.freeRiichi ? this.data.freeUraDoraCount : 0,
       winTile: winTile,
       melds: this.data.freeMelds,
       concealedTiles: concealedTiles

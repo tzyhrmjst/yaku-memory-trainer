@@ -37,6 +37,39 @@ assertEqual(
   'generated indicators match desired dora count'
 );
 
+var uniqueIndicators = dora.makeIndicatorsForCount(
+  ['2m','3m','4m','5m','6m','7m','3p','4p','5p','2s','3s','4s','8s','9s'],
+  2
+);
+assertEqual(
+  new Set(uniqueIndicators).size,
+  uniqueIndicators.length,
+  'generated indicators do not repeat the same indicator tile'
+);
+assertEqual(
+  dora.countDora(['2m','3m','4m','5m','6m','7m','3p','4p','5p','2s','3s','4s','8s','9s'], uniqueIndicators, true),
+  2,
+  'unique generated indicators still match desired dora count'
+);
+
+var uraIndicators = dora.makeIndicatorsForCount(['0m','5m','5m','2p','2p','3p'], 2, false);
+assertEqual(
+  dora.countDora(['0m','5m','5m','2p','2p','3p'], uraIndicators, false),
+  2,
+  'generated ura indicators do not subtract red fives'
+);
+
+var singleIndicator = dora.makeSingleIndicatorForCount(
+  ['2m','2m','3m','3m','4m','4m','5p','6p','7p','2s','3s','4s','8s','8s'],
+  2
+);
+assertEqual(singleIndicator.length, 1, 'single indicator generator returns only one indicator');
+assertEqual(
+  dora.countDora(['2m','2m','3m','3m','4m','4m','5p','6p','7p','2s','3s','4s','8s','8s'], singleIndicator, true),
+  2,
+  'single indicator can represent multiple copies of the same dora'
+);
+
 var displays = dora.buildIndicatorDisplays(['1m', '9s']);
 assertEqual(displays[0].dora, '2m', 'indicator display includes actual manzu dora');
 assertEqual(displays[1].dora, '1s', 'indicator display includes wrapped souzu dora');

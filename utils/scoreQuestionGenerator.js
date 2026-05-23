@@ -459,5 +459,8 @@ function buildScorePracticeSet(count, opts) {
 }
 
 module.exports = {
-  buildScorePracticeSet: buildScorePracticeSet
+  buildScorePracticeSet: buildScorePracticeSet,
+  __test__: {
+    makeFuOptions: makeFuOptions
+  }
 };

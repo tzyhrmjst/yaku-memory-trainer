@@ -198,13 +198,11 @@ function calculateFuForPartition(partition, context) {
     details.push({ name: pairName(pair.tile, context) || '役牌雀头', fu: 2 });
   }
 
-  // 听牌形符
-  if (winMethod === 'ron' && winTile) {
-    if (waitType === 'kanchan' || waitType === 'penchan' || waitType === 'tanki') {
-      subtotal += 2;
-      var waitName = waitType === 'kanchan' ? '坎张待' : waitType === 'penchan' ? '边张待' : '单骑待';
-      details.push({ name: waitName, fu: 2 });
-    }
+  // 听牌形符与荣和/自摸无关；平和自摸已在上方提前返回固定20符。
+  if (winTile && (waitType === 'kanchan' || waitType === 'penchan' || waitType === 'tanki')) {
+    subtotal += 2;
+    var waitName = waitType === 'kanchan' ? '嵌张待' : waitType === 'penchan' ? '边张待' : '单骑待';
+    details.push({ name: waitName, fu: 2 });
   }
 
   // 进位到十位
