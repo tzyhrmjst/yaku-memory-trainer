@@ -261,8 +261,8 @@ function getWaitType(melds, pair, winTile) {
     if (m2.type !== 'sequence' || m2.suit !== winSuit) continue;
 
     if (winNum === m2.startNum + 1) return 'kanchan';
-    if (winNum === m2.startNum && m2.startNum === 1) return 'penchan';
-    if (winNum === m2.startNum + 2 && m2.startNum === 7) return 'penchan';
+    if (winNum === m2.startNum + 2 && m2.startNum === 1) return 'penchan';
+    if (winNum === m2.startNum && m2.startNum === 7) return 'penchan';
   }
 
   return 'ryanmen';

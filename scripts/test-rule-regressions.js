@@ -205,13 +205,50 @@ var fuKanchan = fc.calculateFu(
 assert('嵌张荣和含+2符',
   fuKanchan.fuDetails.some(function(d) { return d.name.indexOf('嵌张待') !== -1 && d.fu === 2; }));
 
-// 边张待 +2 符 — 1m2m3m 成顺子，和了牌是1m=23等1的辺張
+// 边张待 +2 符 — 1m2m3m 成顺子，和了牌是3m=12等3的辺張
 var fuPenchan = fc.calculateFu(
   ['1m','2m','3m','1p','2p','3p','4p','5p','6p','7p','8p','9p','1s','1s'],
-  { winMethod: 'ron', winTile: '1m', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
+  { winMethod: 'ron', winTile: '3m', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
 );
 assert('边张荣和含+2符',
   fuPenchan.fuDetails.some(function(d) { return d.name.indexOf('边张待') !== -1 && d.fu === 2; }));
+
+// 另一端边张：7m8m9m，和了牌7m=89等7
+var fuPenchanLow = fc.calculateFu(
+  ['7m','8m','9m','1p','2p','3p','4p','5p','6p','7p','8p','9p','1s','1s'],
+  { winMethod: 'ron', winTile: '7m', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
+);
+assert('89等7边张荣和含+2符',
+  fuPenchanLow.fuDetails.some(function(d) { return d.name.indexOf('边张待') !== -1 && d.fu === 2; }));
+
+// 78荣9是両面，不是边张；此例应为立直+平和的30符形
+var fuPinfuRyanmen9 = fc.calculateFu(
+  ['4m','5m','6m','6p','7p','8p','7p','8p','9p','7s','8s','9s','3m','3m'],
+  { winMethod: 'ron', winTile: '9p', hasOpenMeld: false, roundWind: '1z', seatWind: '1z' }
+);
+test('78荣9両面平和形为30符', fuPinfuRyanmen9.fu, 30);
+assert('78荣9不含边张待',
+  !fuPinfuRyanmen9.fuDetails.some(function(d) { return d.name.indexOf('边张待') !== -1; }));
+
+var answerPinfuRyanmen9 = builder.buildAnswer(
+  ['4m','5m','6m','6p','7p','8p','7p','8p','9p','7s','8s','9s','3m','3m'],
+  { winMethod: 'ron', isDealer: true, isMenzen: true, hasOpenMeld: false,
+    roundWind: '1z', seatWind: '1z', riichi: true, doraIndicators: [], winTile: '9p' }
+);
+assert('78荣9最终答案返回有效', answerPinfuRyanmen9.valid);
+test('78荣9最终答案番符点', {
+  han: answerPinfuRyanmen9.answer.han,
+  fu: answerPinfuRyanmen9.answer.fu,
+  pointText: answerPinfuRyanmen9.answer.pointText
+}, { han: 2, fu: 30, pointText: '2900' });
+
+// 23荣1也是両面，不是边张
+var fuRyanmen1 = fc.calculateFu(
+  ['1m','2m','3m','2p','3p','4p','4p','5p','6p','3s','4s','5s','6s','6s'],
+  { winMethod: 'ron', winTile: '1m', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
+);
+assert('23荣1不含边张待',
+  !fuRyanmen1.fuDetails.some(function(d) { return d.name.indexOf('边张待') !== -1; }));
 
 // 両面待 0 符 — 23s45s 型，和了牌 4s 完成顺子 234s 或 345s，均为两端
 var fuRyanmen = fc.calculateFu(
