@@ -468,9 +468,20 @@ function checkHonorYaku(partition, context) {
 function countConcealedTriplets(melds, context, winTile) {
   return melds.filter(m => {
     if (m.type !== 'triplet' && m.type !== 'kan') return false;
-    if (context.hasFuro && !context.furoKeepsTripletsConcealed && !context.explicitSanankou) {
+
+    var explicitMelds = context.explicitMelds || [];
+    if (explicitMelds.length > 0) {
+      for (var i = 0; i < explicitMelds.length; i++) {
+        var em = explicitMelds[i];
+        if ((em.type === 'triplet' || em.type === 'kan') && em.tile === m.tile) {
+          if (em.open) return false;
+          break;
+        }
+      }
+    } else if (context.hasFuro && !context.furoKeepsTripletsConcealed && !context.explicitSanankou) {
       return false;
     }
+
     if (context.ron && winTile === m.tile) {
       return false;
     }
@@ -620,7 +631,7 @@ function checkContextYaku(context) {
  */
 function checkAllYaku(tiles, options) {
   const opts = options || {};
-  const context = parseContext(opts.contextHint || '');
+  const context = Object.assign(parseContext(opts.contextHint || ''), opts.context || {});
   const winTile = opts.winTile || '';
   const counts = buildCounts(tiles);
   const results = new Set();

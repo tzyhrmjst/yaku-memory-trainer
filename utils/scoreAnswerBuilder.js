@@ -87,9 +87,14 @@ function buildAnswer(tiles, context) {
 
   // 2. 判役
   var contextHint = buildContextHint(context);
+  var yakuContext = {};
+  if (context.melds && context.melds.length > 0) {
+    yakuContext.explicitMelds = meldsUtil.toExplicitMelds(context.melds, '').explicitMelds;
+  }
   var yakuIds = yc.checkAllYaku(normalizedTiles, {
     winTile: winTile,
-    contextHint: contextHint
+    contextHint: contextHint,
+    context: yakuContext
   });
 
   // 3. 过滤门清专用役（副露时排除）

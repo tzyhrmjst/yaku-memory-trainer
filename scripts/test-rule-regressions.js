@@ -345,6 +345,30 @@ assert('副露混在 暗刻2s按暗刻+4符',
 assert('副露混在 无食下荣和',
   !fuMixed.fuDetails.some(function(d) { return d.name.indexOf('食下') !== -1; }));
 
+var ansSanankouMenzen = builder.buildAnswer(
+  ['1s','1s','1s','2p','2p','2p','3p','3p','3p','7m','8m','9m','5z','5z'],
+  { winMethod: 'ron', isDealer: false, isMenzen: true, hasOpenMeld: false,
+    roundWind: '1z', seatWind: '2z', riichi: true, doraIndicators: [], winTile: '5z' }
+);
+assert('门清荣和单骑 三暗刻计入役种',
+  ansSanankouMenzen.valid && ansSanankouMenzen.answer.yaku.some(function(y) { return y.id === 'sanankou'; }));
+test('门清荣和单骑 三暗刻总番', ansSanankouMenzen.answer.han, 3);
+
+var ansSanankouOpenSeq = builder.buildAnswer(
+  ['2m','3m','4m','1p','1p','1p','3s','3s','3s','4p','4p','4p','6m','6m'],
+  {
+    winMethod: 'ron', isDealer: false, isMenzen: false, hasOpenMeld: true,
+    roundWind: '1z', seatWind: '2z', riichi: false, doraIndicators: [], winTile: '6m',
+    melds: [
+      { type: 'chi', tiles: ['2m','3m','4m'], open: true }
+    ],
+    concealedTiles: ['1p','1p','1p','3s','3s','3s','4p','4p','4p','6m','6m']
+  }
+);
+assert('副露明顺 + 手内三暗刻计入役种',
+  ansSanankouOpenSeq.valid && ansSanankouOpenSeq.answer.yaku.some(function(y) { return y.id === 'sanankou'; }));
+test('副露明顺三暗刻总番', ansSanankouOpenSeq.answer.han, 2);
+
 // =========================================================================
 // 10. 连风牌 contextHint 集成
 // =========================================================================

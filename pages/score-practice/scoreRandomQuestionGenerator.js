@@ -469,6 +469,14 @@ function buildRandomScoreQuestion(opts) {
     // 随机上下文
     var context = randomContext(difficulty);
 
+    if (yakuId === 'sanankou') {
+      context.isMenzen = true;
+      context.hasOpenMeld = false;
+      if (context.winMethod === 'ron' && hand.pair && hand.pair.length > 0) {
+        hand.winTile = hand.pair[0];
+      }
+    }
+
     // 对于 riichi/mentsumo 这类纯上下文役，手牌可能不特定
     // 需要确保 context 与 hand.contextHint 兼容
     if (hand.contextHint) {
