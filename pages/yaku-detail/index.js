@@ -22,6 +22,7 @@ function formatHanDisplay(han) {
 
 Page({
   data: {
+    loading: true,
     yaku: null,
     masteryInfo: null,
     mark: '' // '' | 'review' | 'mastered'
@@ -34,27 +35,34 @@ Page({
       return;
     }
 
-    const yaku = yakus.find(y => y.id === id);
-    if (!yaku) {
+    try {
+      const yaku = yakus.find(y => y.id === id);
+      if (!yaku) {
+        wx.navigateBack();
+        return;
+      }
+
+      const categoryInfo = categoryMap[yaku.category] || categoryMap.basic;
+      const mastery = statsEngine.getYakuMastery();
+      const masteryInfo = mastery.find(m => m.yakuId === id);
+      const marks = storage.getYakuMarks();
+
+      this.setData({
+        loading: false,
+        yaku: {
+          ...yaku,
+          categoryName: categoryInfo.name,
+          categoryTheme: categoryInfo.theme,
+          hanDisplay: formatHanDisplay(yaku.han)
+        },
+        masteryInfo: masteryInfo || { accuracy: 0, totalAnswered: 0, masteryLevel: 'new' },
+        mark: marks[id] || ''
+      });
+    } catch (e) {
+      console.error('yaku-detail onLoad error:', e);
+      wx.showToast({ title: '加载失败', icon: 'none' });
       wx.navigateBack();
-      return;
     }
-
-    const categoryInfo = categoryMap[yaku.category] || categoryMap.basic;
-    const mastery = statsEngine.getYakuMastery();
-    const masteryInfo = mastery.find(m => m.yakuId === id);
-    const marks = storage.getYakuMarks();
-
-    this.setData({
-      yaku: {
-        ...yaku,
-        categoryName: categoryInfo.name,
-        categoryTheme: categoryInfo.theme,
-        hanDisplay: formatHanDisplay(yaku.han)
-      },
-      masteryInfo: masteryInfo || { accuracy: 0, totalAnswered: 0, masteryLevel: 'new' },
-      mark: marks[id] || ''
-    });
   },
 
   onToggleMark(e) {

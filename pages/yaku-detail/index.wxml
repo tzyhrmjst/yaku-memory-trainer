@@ -1,4 +1,9 @@
-<view class="page" wx:if="{{yaku}}">
+<view class="page" wx:if="{{loading}}">
+  <view class="loading-container">
+    <t-loading theme="circular" size="40rpx" text="加载中..." />
+  </view>
+</view>
+<view class="page" wx:elif="{{yaku}}">
   <view class="page-container">
     <!-- 标题区 -->
     <view class="detail-header">

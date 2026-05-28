@@ -84,6 +84,7 @@ function buildAnswer(tiles, context) {
 
   // 1. 归一化牌（赤五 → 普通五）用于判役和算符
   var normalizedTiles = tiles.map(dora.normalizeTile);
+  var normalizedWinTile = dora.normalizeTile(winTile);
 
   // 2. 判役
   var contextHint = buildContextHint(context);
@@ -92,7 +93,7 @@ function buildAnswer(tiles, context) {
     yakuContext.explicitMelds = meldsUtil.toExplicitMelds(context.melds, '').explicitMelds;
   }
   var yakuIds = yc.checkAllYaku(normalizedTiles, {
-    winTile: winTile,
+    winTile: normalizedWinTile,
     contextHint: contextHint,
     context: yakuContext
   });
@@ -175,7 +176,7 @@ function buildAnswer(tiles, context) {
   } else {
     var fuContext = {
       winMethod: winMethod,
-      winTile: winTile,
+      winTile: normalizedWinTile,
       hasOpenMeld: hasOpenMeld,
       roundWind: roundWind,
       seatWind: seatWind

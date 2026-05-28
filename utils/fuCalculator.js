@@ -49,7 +49,7 @@ function isDoubleWind(tile, context) {
 function calculateFu(tiles, context) {
   context = context || {};
   var winMethod = context.winMethod || 'ron';
-  var winTile = context.winTile || '';
+  context.winTile = normalizeWinTile(context.winTile || '');
   var hasOpenMeld = context.hasOpenMeld || false;
 
   var counts = buildCounts(tiles);
@@ -107,7 +107,7 @@ function calculateFu(tiles, context) {
  */
 function calculateFuForPartition(partition, context) {
   var winMethod = context.winMethod || 'ron';
-  var winTile = context.winTile || '';
+  var winTile = normalizeWinTile(context.winTile || '');
   var hasOpenMeld = context.hasOpenMeld || false;
   var meldOpenFlags = context.meldOpenFlags || null;
   var explicitMelds = context.explicitMelds || null;
@@ -226,7 +226,13 @@ function buildCounts(tiles) {
   return c;
 }
 
+function normalizeWinTile(t) {
+  if (!t || t.length < 2) return t;
+  return t[0] === '0' ? '5' + t[1] : t;
+}
+
 function isRyanmenWaitWin(melds, winTile) {
+  winTile = normalizeWinTile(winTile);
   if (!winTile || isHonor(winTile)) return false;
   var winNum = parseInt(winTile[0], 10);
   var winSuit = winTile[1];
@@ -242,6 +248,7 @@ function isRyanmenWaitWin(melds, winTile) {
 
 function getWaitType(melds, pair, winTile) {
   if (!winTile) return 'unknown';
+  winTile = normalizeWinTile(winTile);
   var winSuit = winTile[1];
   var winNum = parseInt(winTile[0], 10);
 
