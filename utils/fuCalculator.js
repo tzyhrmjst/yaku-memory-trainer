@@ -263,6 +263,9 @@ function getWaitType(melds, pair, winTile) {
     }
   }
 
+  // 先判断两面，避免被嵌张/边张抢先（同一和了牌可能同时符合两面和嵌张，如 678+789 和 8m 时，678 的末尾 8 是两面，789 的中间 8 是嵌张，应优先取两面）
+  if (isRyanmenWaitWin(melds, winTile)) return 'ryanmen';
+
   for (var i = 0; i < melds.length; i++) {
     var m2 = melds[i];
     if (m2.type !== 'sequence' || m2.suit !== winSuit) continue;
@@ -272,7 +275,7 @@ function getWaitType(melds, pair, winTile) {
     if (winNum === m2.startNum && m2.startNum === 7) return 'penchan';
   }
 
-  return 'ryanmen';
+  return 'unknown';
 }
 
 module.exports = {
