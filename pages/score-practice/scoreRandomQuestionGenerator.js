@@ -28,6 +28,23 @@ var MIXED_YAKU_POOL = [
   'chuuren_poutou', 'suuankou', 'kokushi_musou'
 ];
 
+var MENZEN_TARGET_YAKU = {
+  chiitoitsu: true,
+  riichi: true,
+  double_riichi: true,
+  mentsumo: true,
+  ippatsu: true,
+  iipeikou: true,
+  ryanpeikou: true,
+  pinfu: true,
+  suuankou: true,
+  suuankou_tanki: true,
+  kokushi_musou: true,
+  kokushi_musou_13men: true,
+  chuuren_poutou: true,
+  junsei_chuuren_poutou: true
+};
+
 // 上下文概率配置
 var CONTEXT_PROB = {
   basic: { ronRate: 0.70, childRate: 0.75, menzenRate: 0.80, riichiInMenzenRate: 0.55 },
@@ -469,9 +486,14 @@ function buildRandomScoreQuestion(opts) {
     // 随机上下文
     var context = randomContext(difficulty);
 
-    if (yakuId === 'sanankou') {
+    if (MENZEN_TARGET_YAKU[yakuId] || yakuId === 'sanankou') {
       context.isMenzen = true;
       context.hasOpenMeld = false;
+      context.riichi = yakuId === 'riichi' || yakuId === 'double_riichi' ||
+        yakuId === 'ippatsu' || context.riichi;
+    }
+
+    if (yakuId === 'sanankou') {
       if (context.winMethod === 'ron' && hand.pair && hand.pair.length > 0) {
         hand.winTile = hand.pair[0];
       }

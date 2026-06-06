@@ -47,3 +47,35 @@
 .yaku-card-footer {
   gap: 12rpx;
 }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 40rpx;
+  padding: 0 16rpx;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  line-height: 40rpx;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.tag-han {
+  color: @brand-color;
+  background: @brand-light;
+}
+
+.tag-success {
+  color: @basic-color;
+  border: 1rpx solid fade(@basic-color, 45%);
+}
+
+.tag-warning {
+  color: @advanced-color;
+  border: 1rpx solid fade(@advanced-color, 45%);
+}
+
+.tag-danger {
+  color: @yakuman-color;
+  border: 1rpx solid fade(@yakuman-color, 45%);
+}

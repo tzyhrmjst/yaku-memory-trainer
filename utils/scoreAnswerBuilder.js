@@ -63,6 +63,13 @@ function buildContextHint(context) {
   return parts.join('，');
 }
 
+function hasOpenMeldFromMelds(melds) {
+  if (!melds || melds.length === 0) return false;
+  return melds.some(function (meld) {
+    return meld.open !== false;
+  });
+}
+
 /**
  * 从 tiles + context 构建完整答案
  * @param {string[]} tiles - 14张手牌（可含 0m/0p/0s 赤五）
@@ -73,8 +80,8 @@ function buildAnswer(tiles, context) {
   context = context || {};
   var winMethod = context.winMethod || 'ron';
   var isDealer = context.isDealer || false;
-  var isMenzen = context.isMenzen !== undefined ? context.isMenzen : !context.hasOpenMeld;
-  var hasOpenMeld = context.hasOpenMeld || false;
+  var hasOpenMeld = context.hasOpenMeld || hasOpenMeldFromMelds(context.melds);
+  var isMenzen = hasOpenMeld ? false : (context.isMenzen !== undefined ? context.isMenzen : true);
   var roundWind = context.roundWind || '1z';
   var seatWind = context.seatWind || '2z';
   var riichi = context.riichi || false;
@@ -88,7 +95,9 @@ function buildAnswer(tiles, context) {
 
   // 2. 判役
   var contextHint = buildContextHint(context);
-  var yakuContext = {};
+  var yakuContext = {
+    hasFuro: hasOpenMeld
+  };
   if (context.melds && context.melds.length > 0) {
     yakuContext.explicitMelds = meldsUtil.toExplicitMelds(context.melds, '').explicitMelds;
   }

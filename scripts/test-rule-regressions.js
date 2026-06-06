@@ -519,6 +519,20 @@ assert('随机算分题役满应包含0符选项',
   randomFuOptions.indexOf(0) !== -1);
 
 // =========================================================================
+// 15. 副露不能成立门清限定役
+// =========================================================================
+console.log('\n=== 15. 副露不能成立门清限定役 ===');
+
+var ansOpenChiitoi = builder.buildAnswer(
+  ['1z','1z','2z','2z','3z','3z','4z','4z','5z','5z','6z','6z','7z','7z'],
+  { winMethod: 'ron', isDealer: false, isMenzen: false, hasOpenMeld: true,
+    roundWind: '1z', seatWind: '2z', riichi: false, doraIndicators: [], winTile: '7z' }
+);
+assert('副露七对子牌形不能返回七对子有效答案',
+  !ansOpenChiitoi.valid ||
+  !ansOpenChiitoi.answer.yaku.some(function(y) { return y.id === 'chiitoitsu'; }));
+
+// =========================================================================
 // 结果汇总
 // =========================================================================
 console.log('');

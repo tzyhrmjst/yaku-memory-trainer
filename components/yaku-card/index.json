@@ -1,6 +1,3 @@
 {
-  "component": true,
-  "usingComponents": {
-    "t-tag": "tdesign-miniprogram/tag/tag"
-  }
+  "component": true
 }

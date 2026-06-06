@@ -23,24 +23,29 @@ Component({
 
   observers: {
     category(val) {
-      const info = categoryMap[val] || categoryMap.basic;
-      this.setData({
-        categoryName: info.name,
-        categoryTheme: info.theme
-      });
+      this.updateDisplay(this.data.han, val);
     },
     han(val) {
-      this.setData({ hanDisplay: formatHanDisplay(val) });
+      this.updateDisplay(val, this.data.category);
     }
   },
 
   lifetimes: {
     attached() {
-      this.setData({ hanDisplay: formatHanDisplay(this.data.han) });
+      this.updateDisplay(this.data.han, this.data.category);
     }
   },
 
   methods: {
+    updateDisplay(han, category) {
+      const info = categoryMap[category] || categoryMap.basic;
+      this.setData({
+        hanDisplay: formatHanDisplay(han),
+        categoryName: info.name,
+        categoryTheme: info.theme
+      });
+    },
+
     onTap() {
       this.triggerEvent('tap', { yakuId: this.data.yakuId });
     }

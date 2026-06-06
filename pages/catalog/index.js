@@ -3,6 +3,7 @@ const statsEngine = require('../../utils/statsEngine');
 
 Page({
   data: {
+    allYakus: [],
     yakus: [],
     filter: 'all'
   },
@@ -21,12 +22,23 @@ Page({
         accuracy: m ? m.accuracy : 0
       };
     });
-    this.setData({ yakus: list });
+    this.setData({
+      allYakus: list,
+      yakus: this.filterYakus(list, this.data.filter)
+    });
   },
 
   onFilterTap(e) {
     const filter = e.currentTarget.dataset.filter;
-    this.setData({ filter });
+    this.setData({
+      filter,
+      yakus: this.filterYakus(this.data.allYakus, filter)
+    });
+  },
+
+  filterYakus(list, filter) {
+    if (filter === 'all') return list;
+    return list.filter(item => item.category === filter);
   },
 
   onYakuTap(e) {

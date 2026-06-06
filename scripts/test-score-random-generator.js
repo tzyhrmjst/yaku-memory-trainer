@@ -2,6 +2,7 @@
 var srg = require('../pages/score-practice/scoreRandomQuestionGenerator');
 var sc = require('../utils/scoreCalculator');
 var dora = require('../utils/dora');
+var yc = require('../utils/yakuChecker');
 
 var passed = 0;
 var failed = 0;
@@ -117,6 +118,17 @@ function testBatch(label, difficulty, count) {
     var isYakuman = a.han >= 13;
     if (!isYakuman) {
       assert(a.fuDetails && a.fuDetails.length > 0, q.id + ': fuDetails empty for non-yakuman');
+    }
+
+    // 9. 门清限定役不能带副露展示
+    var menzenOnlyYaku = a.yaku.filter(function (y) {
+      return yc.MENZEN_ONLY_YAKU.has(y.id);
+    });
+    if (menzenOnlyYaku.length > 0) {
+      assert(!ctx.hasOpenMeld && ctx.isMenzen,
+        q.id + ': menzen-only yaku with open context: ' + menzenOnlyYaku.map(function (y) { return y.id; }).join(','));
+      assert(!q.melds || q.melds.length === 0,
+        q.id + ': menzen-only yaku with displayed melds: ' + menzenOnlyYaku.map(function (y) { return y.id; }).join(','));
     }
 
     // 统计
