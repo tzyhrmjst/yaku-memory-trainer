@@ -1,6 +1,4 @@
 {
-  "usingComponents": {
-    "yaku-card": "../../components/yaku-card/index"
-  },
+  "usingComponents": {},
   "navigationBarTitleText": "役种图鉴"
 }
