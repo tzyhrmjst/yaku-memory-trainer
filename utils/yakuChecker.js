@@ -729,6 +729,12 @@ function checkAllYaku(tiles, options) {
     results.delete('honchantaiyaochuu');
   }
 
+  // 七对子是特殊和牌形，二杯口则按四面子一雀头解释；两种拆法不能复合。
+  // 同时成立时按高点法采用番数更高的二杯口。
+  if (results.has('ryanpeikou')) {
+    results.delete('chiitoitsu');
+  }
+
   // Layer 5: Context
   for (const id of checkContextYaku(context)) {
     results.add(id);

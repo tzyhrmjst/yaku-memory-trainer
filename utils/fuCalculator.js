@@ -59,8 +59,19 @@ function calculateFu(tiles, context) {
     return { fu: 0, fuSubtotal: 0, fuDetails: [] };
   }
 
-  // 七对子 → 固定25符
-  if (yc.checkChiitoitsu(counts)) {
+  // 先取得标准形拆分。牌面同时可解释为七对子和二杯口时，按高点法采用
+  // 二杯口的四面子一雀头解释，不能沿用七对子固定25符。
+  var partitions = yc.findAllPartitions(counts);
+  var hasRyanpeikou = !hasOpenMeld && partitions.some(function(partition) {
+    return yc.checkStructureYaku(
+      partition,
+      { hasFuro: false },
+      context.winTile
+    ).indexOf('ryanpeikou') !== -1;
+  });
+
+  // 纯七对子 → 固定25符
+  if (yc.checkChiitoitsu(counts) && !hasRyanpeikou) {
     return {
       fu: 25, fuSubtotal: 25,
       fuDetails: [{ name: '七对子固定符', fu: 25 }]
@@ -80,7 +91,6 @@ function calculateFu(tiles, context) {
   }
 
   // 标准形 — 找所有合法拆分，用高点法选符数最高的
-  var partitions = yc.findAllPartitions(counts);
   if (partitions.length === 0) {
     return {
       fu: 30, fuSubtotal: 30,

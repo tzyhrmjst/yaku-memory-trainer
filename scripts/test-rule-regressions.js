@@ -178,6 +178,37 @@ var fuChiitoi = fc.calculateFu(
 );
 test('七对子固定25符', fuChiitoi.fu, 25);
 
+// 同一牌面也能拆成四组顺子时，七对子与二杯口不能复合；按高点法取二杯口
+var ryanpeikouChiitoiTiles = [
+  '2m','2m','3m','3m','4m','4m',
+  '5p','5p','6p','6p','7p','7p','8s','8s'
+];
+var ryanpeikouChiitoiIds = yc.checkAllYaku(
+  ryanpeikouChiitoiTiles,
+  { winTile: '8s', contextHint: '荣和，场风东，自风南' }
+);
+assert('二杯口与七对子互斥，只保留二杯口',
+  ryanpeikouChiitoiIds.indexOf('ryanpeikou') !== -1 &&
+  ryanpeikouChiitoiIds.indexOf('chiitoitsu') === -1);
+
+var fuRyanpeikouChiitoi = fc.calculateFu(
+  ryanpeikouChiitoiTiles,
+  { winMethod: 'ron', winTile: '8s', hasOpenMeld: false, roundWind: '1z', seatWind: '2z' }
+);
+test('二杯口牌面按标准形计符而非七对子25符', fuRyanpeikouChiitoi.fu, 40);
+
+var ryanpeikouChiitoiAnswer = builder.buildAnswer(
+  ryanpeikouChiitoiTiles,
+  {
+    winMethod: 'ron', isDealer: true, isMenzen: true,
+    roundWind: '1z', seatWind: '1z', winTile: '8s'
+  }
+);
+test('二杯口+断幺九为4番', ryanpeikouChiitoiAnswer.answer.han, 4);
+test('二杯口标准形庄家荣和为满贯', ryanpeikouChiitoiAnswer.answer.totalPoints, 12000);
+assert('算分结果不含七对子',
+  !ryanpeikouChiitoiAnswer.answer.yaku.some(function(y) { return y.id === 'chiitoitsu'; }));
+
 var fuKokushi = fc.calculateFu(
   ['1m','9m','1p','9p','1s','9s','1z','2z','3z','4z','5z','6z','7z','1m'],
   { winMethod: 'ron', winTile: '1m', roundWind: '1z', seatWind: '2z' }
