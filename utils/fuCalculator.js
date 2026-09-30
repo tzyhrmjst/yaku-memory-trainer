@@ -102,6 +102,11 @@ function calculateFu(tiles, context) {
   var bestFu = -1;
 
   for (var i = 0; i < partitions.length; i++) {
+    if (context.pinfu && yc.checkStructureYaku(partitions[i], {
+      hasFuro: hasOpenMeld,
+      roundWind: context.roundWind,
+      seatWind: context.seatWind
+    }, context.winTile).indexOf('pinfu') === -1) continue;
     var result = calculateFuForPartition(partitions[i], context);
     if (result.fu > bestFu) {
       bestFu = result.fu;
@@ -133,7 +138,10 @@ function calculateFuForPartition(partition, context) {
   details.push({ name: '副底', fu: 20 });
 
   // 确定听牌形
-  var waitType = context.waitType || getWaitType(melds, pair, winTile);
+  var sequenceCount = melds.filter(function(m) { return m.type === 'sequence'; }).length;
+  var isPinfuShape = sequenceCount === 4 && !isYakuhaiPair(pair.tile, context) && isRyanmenWaitWin(melds, winTile);
+  // 同一张牌既能补雀头又能完成顺子时，成立平和的解释必须取两面听。
+  var waitType = context.waitType || (isMenzen && isPinfuShape ? 'ryanmen' : getWaitType(melds, pair, winTile));
 
   // 门清荣和 +10 符；副露荣和无额外加符
   if (winMethod === 'ron') {
@@ -143,9 +151,6 @@ function calculateFuForPartition(partition, context) {
     }
   } else {
     // 自摸 — 检查此拆分是否满足平和形
-    var sequenceCount = melds.filter(function(m) { return m.type === 'sequence'; }).length;
-    var isPinfuShape = sequenceCount === 4 && !isYakuhaiPair(pair.tile, context) && isRyanmenWaitWin(melds, winTile);
-
     if (isPinfuShape && isMenzen) {
       return {
         fu: 20, fuSubtotal: 20,

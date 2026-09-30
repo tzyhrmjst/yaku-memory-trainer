@@ -1129,11 +1129,8 @@ function generateSanankou() {
 
     if (groups.length < 3) continue;
 
-    // 第4组可以是顺子或明刻
+    // 副露版固定让第4组为明顺子，避免把三组目标暗刻误展示为“碰”。
     var lastGroup = randomSequence(SUITS, null, usage);
-    if (!lastGroup) {
-      lastGroup = randomTriplet(allKinds, usage);
-    }
     if (!lastGroup) continue;
     groups.push(lastGroup);
 
@@ -1143,10 +1140,13 @@ function generateSanankou() {
     var tiles = buildHand(groups, pair);
     return {
       tiles: tiles,
-      winTile: pickWinTile(groups, pair),
+      // 和了牌必须来自暗牌区，不能落在已经完成的明顺子中。
+      winTile: pair[0],
       contextHint: Math.random() < 0.5 ? '该手牌已副露（明顺子）' : '该手牌门前清',
       groups: groups,
-      pair: pair
+      pair: pair,
+      // 三组刻子保持暗刻；只有最后生成的第4组面子作为明顺子展示。
+      openMeldIndices: [3]
     };
   }
   return null;
@@ -1408,6 +1408,7 @@ function generateHand(yakuId, variant) {
         excludeOptionIds: result.excludeOptionIds || [],
         groups: result.groups || null,
         pair: result.pair || null,
+        openMeldIndices: result.openMeldIndices || null,
         hasOpenMeld: hasOpen
       };
       }

@@ -564,6 +564,26 @@ assert('副露七对子牌形不能返回七对子有效答案',
   !ansOpenChiitoi.answer.yaku.some(function(y) { return y.id === 'chiitoitsu'; }));
 
 // =========================================================================
+// 平和的和了牌同时属于雀头与两面顺子（用户反馈牌例）。
+var overlappingPinfuTiles = ['3m','4m','5m','6s','7s','8s','1p','2p','3p','2s','3s','4s','8s','8s'];
+var overlappingPinfuContext = {
+  winMethod: 'ron', isDealer: false, isMenzen: true, hasOpenMeld: false,
+  roundWind: '1z', seatWind: '2z', riichi: true, winTile: '8s'
+};
+var overlappingPinfuAnswer = builder.buildAnswer(overlappingPinfuTiles, overlappingPinfuContext);
+assert('重叠雀头与顺子的牌例计入平和', overlappingPinfuAnswer.valid &&
+  overlappingPinfuAnswer.answer.yaku.some(function(y) { return y.id === 'pinfu'; }));
+test('平和立直荣和为2番30符2000点',
+  [overlappingPinfuAnswer.answer.han, overlappingPinfuAnswer.answer.fu, overlappingPinfuAnswer.answer.pointText],
+  [2, 30, '2000']);
+assert('平和符数明细没有单骑加符', !overlappingPinfuAnswer.answer.fuDetails.some(function(d) {
+  return /单骑|単骑/.test(d.name);
+}));
+test('独立算符也按平和两面听30符', fc.calculateFu(overlappingPinfuTiles, overlappingPinfuContext).fu, 30);
+var overlappingPinfuTsumo = builder.buildAnswer(overlappingPinfuTiles,
+  Object.assign({}, overlappingPinfuContext, { winMethod: 'tsumo' }));
+test('重叠牌例平和自摸固定20符', overlappingPinfuTsumo.answer.fu, 20);
+
 // 结果汇总
 // =========================================================================
 console.log('');

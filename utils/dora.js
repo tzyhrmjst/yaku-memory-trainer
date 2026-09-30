@@ -110,7 +110,7 @@ function findIndicatorPlan(candidates, desired, idx, current, best) {
   }
 }
 
-function makeIndicatorsForCount(tiles, desiredCount, includeRed) {
+function makeIndicatorsForCount(tiles, desiredCount, includeRed, reservedIndicators) {
   if (includeRed !== false) {
     var redCount = tiles.filter(isRedFive).length;
     desiredCount -= redCount;
@@ -118,11 +118,13 @@ function makeIndicatorsForCount(tiles, desiredCount, includeRed) {
   if (!desiredCount || desiredCount <= 0) return [];
 
   var counts = buildCounts(tiles);
+  var physicalCounts = buildCounts(tiles.concat(reservedIndicators || []));
   var candidates = Object.keys(counts)
     .filter(function (tile) { return counts[tile] > 0 && counts[tile] <= desiredCount; })
     .map(function (tile) {
       return { tile: tile, count: counts[tile], indicator: indicatorForDora(tile) };
     })
+    .filter(function (candidate) { return (physicalCounts[candidate.indicator] || 0) < 4; })
     .sort(function (a, b) {
       if (b.count !== a.count) return b.count - a.count;
       return a.tile < b.tile ? -1 : 1;
@@ -133,7 +135,7 @@ function makeIndicatorsForCount(tiles, desiredCount, includeRed) {
   return best.plan || [];
 }
 
-function makeSingleIndicatorForCount(tiles, desiredCount, includeRed) {
+function makeSingleIndicatorForCount(tiles, desiredCount, includeRed, reservedIndicators) {
   if (includeRed !== false) {
     var redCount = tiles.filter(isRedFive).length;
     desiredCount -= redCount;
@@ -141,11 +143,14 @@ function makeSingleIndicatorForCount(tiles, desiredCount, includeRed) {
   if (!desiredCount || desiredCount <= 0) return [];
 
   var counts = buildCounts(tiles);
+  var physicalCounts = buildCounts(tiles.concat(reservedIndicators || []));
   var candidates = Object.keys(counts)
     .map(function (tile) {
       return { tile: tile, count: counts[tile], indicator: indicatorForDora(tile) };
     })
-    .filter(function (candidate) { return candidate.count > 0; })
+    .filter(function (candidate) {
+      return candidate.count > 0 && (physicalCounts[candidate.indicator] || 0) < 4;
+    })
     .sort(function (a, b) {
       var aOver = a.count > desiredCount;
       var bOver = b.count > desiredCount;

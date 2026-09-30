@@ -70,9 +70,10 @@ function meldTypeFromGroup(group) {
  * @param {string[][]} groups - 4个面子数组（每个3-4张牌）
  * @param {string[]} pair - 雀头（2张相同牌）
  * @param {boolean} hasOpenMeld - 是否有明副露
+ * @param {number[]} openMeldIndices - 明副露在 groups 中的下标；未提供时沿用全部副露的旧行为
  * @returns {{ tiles: string[], concealedTiles: string[], melds: Object[], pair: string[] }}
  */
-function normalizeHandShape(groups, pair, hasOpenMeld) {
+function normalizeHandShape(groups, pair, hasOpenMeld, openMeldIndices) {
   var allTiles = [];
   if (groups) {
     for (var g = 0; g < groups.length; g++) {
@@ -96,13 +97,23 @@ function normalizeHandShape(groups, pair, hasOpenMeld) {
     };
   }
 
-  // 有副露：所有 groups 都转为 meld
+  // 有明确下标时，只把实际鸣出的面子移到副露区；其余面子仍是手牌中的暗牌。
+  // 未提供下标时保留旧行为，兼容尚未补充精确副露信息的生成器。
   var melds = [];
   var concealedTiles = [];
   var usedTiles = {};
+  var explicitOpenIndices = Array.isArray(openMeldIndices)
+    ? new Set(openMeldIndices)
+    : null;
 
   for (var g = 0; g < groups.length; g++) {
     var group = groups[g];
+    if (explicitOpenIndices && !explicitOpenIndices.has(g)) {
+      for (var c = 0; c < group.length; c++) {
+        concealedTiles.push(group[c]);
+      }
+      continue;
+    }
     var type = meldTypeFromGroup(group);
     if (!type) {
       // 无法分类的 group 放回暗牌

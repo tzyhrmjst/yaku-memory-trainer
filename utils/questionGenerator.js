@@ -174,7 +174,7 @@ function generateTileQuestion(yaku, allYakus, variant) {
   var handHasOpen = hint.indexOf('已副露') !== -1;
   if (hand.groups && hand.pair && handHasOpen) {
     var shape = meldsUtil.normalizeHandShape(
-      hand.groups, hand.pair, handHasOpen
+      hand.groups, hand.pair, handHasOpen, hand.openMeldIndices
     );
     questionMelds = shape.melds || [];
     questionConcealed = shape.concealedTiles || hand.tiles.slice();

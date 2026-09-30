@@ -70,6 +70,19 @@ assertEqual(
   'single indicator can represent multiple copies of the same dora'
 );
 
+var exhaustedTiles = ['6s','6s','6s','6s','7s','2m'];
+assertEqual(dora.makeSingleIndicatorForCount(exhaustedTiles, 1).includes('6s'), false,
+  'single indicator cannot be a fifth six sou');
+assertEqual(dora.makeIndicatorsForCount(exhaustedTiles, 1).includes('6s'), false,
+  'multiple indicator plan cannot include a fifth six sou');
+var reservedTiles = ['6s','6s','6s','7s','2m'];
+assertEqual(dora.makeSingleIndicatorForCount(reservedTiles, 1, false, ['6s']).includes('6s'), false,
+  'ura indicator accounts for the visible indicator already using the fourth copy');
+assertEqual(dora.makeSingleIndicatorForCount(['0s','5s','5s','5s','6s'], 1).includes('5s'), false,
+  'red and normal fives share the physical four-copy limit');
+assertEqual(dora.makeSingleIndicatorForCount(['6s','6s','6s','6s','7s'], 1)[0], '5s',
+  'single indicator falls back to an available tile when the closest target is impossible');
+
 var displays = dora.buildIndicatorDisplays(['1m', '9s']);
 assertEqual(displays[0].dora, '2m', 'indicator display includes actual manzu dora');
 assertEqual(displays[1].dora, '1s', 'indicator display includes wrapped souzu dora');

@@ -52,6 +52,15 @@ pool.forEach(function(q) {
     assert(q.id + ' target yaku survives normalization',
       normalized.indexOf(q.yakuId) !== -1,
       'target=' + q.yakuId + ', normalized=' + normalized.join(','));
+
+    if (q.yakuId === 'sanankou' && (q.context || '').indexOf('已副露') !== -1) {
+      assert(q.id + ' displays only the fourth meld as open',
+        q.melds.length === 1 && q.melds[0].type === 'chi',
+        'melds=' + JSON.stringify(q.melds));
+      assert(q.id + ' keeps three concealed triplets in hand',
+        q.concealedTiles.length === 11,
+        'concealedTiles=' + JSON.stringify(q.concealedTiles));
+    }
   }
 
   if (q.type === 'def-to-condition') {

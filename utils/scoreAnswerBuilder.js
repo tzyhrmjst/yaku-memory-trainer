@@ -190,6 +190,8 @@ function buildAnswer(tiles, context) {
       roundWind: roundWind,
       seatWind: seatWind
     };
+    // 已计入平和时，符数必须使用同样成立平和的拆牌和两面听解释。
+    fuContext.pinfu = yakuIds.indexOf('pinfu') !== -1;
 
     // 如果有完整副露信息，传递 explicitMelds 以提高明暗判定精度
     if (context.melds && context.melds.length > 0) {

@@ -220,9 +220,9 @@ function generateIndicators(tiles, desiredCount) {
   return dora.makeSingleIndicatorForCount(tiles, desiredCount);
 }
 
-function generateUraIndicators(tiles, desiredCount) {
+function generateUraIndicators(tiles, desiredCount, doraIndicators) {
   if (desiredCount <= 0) return [];
-  return dora.makeSingleIndicatorForCount(tiles, desiredCount, false);
+  return dora.makeSingleIndicatorForCount(tiles, desiredCount, false, doraIndicators);
 }
 
 function makeHanOptions(correctHan) {
@@ -374,7 +374,7 @@ function buildQuestionFromHand(handTiles, winTile, context, difficulty, melds, c
       uraDoraCount = pickDoraCount(uraConfig.dist);
       uraDoraCount = Math.min(uraDoraCount, uraConfig.maxDora);
       if (uraDoraCount > 0) {
-        uraDoraIndicators = generateUraIndicators(tiles, uraDoraCount);
+        uraDoraIndicators = generateUraIndicators(tiles, uraDoraCount, doraIndicators);
         uraDoraCount = dora.countDora(tiles, uraDoraIndicators, false);
       }
     }

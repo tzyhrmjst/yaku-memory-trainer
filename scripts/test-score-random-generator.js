@@ -43,7 +43,7 @@ function testBatch(label, difficulty, count) {
 
     // 1. 同种牌不超过4张
     var tileCounts = {};
-    q.tiles.forEach(function (t) {
+    q.tiles.concat(ctx.doraIndicators || [], ctx.uraDoraIndicators || []).forEach(function (t) {
       var n = dora.normalizeTile(t);
       tileCounts[n] = (tileCounts[n] || 0) + 1;
     });
